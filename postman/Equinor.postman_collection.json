@@ -1,0 +1,171 @@
+{
+	"info": {
+		"_postman_id": "49ac4af4-1ccc-4333-83e6-e690b2571c4d",
+		"name": "Equinor Omnia TimeSeries API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List time series",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "d08015e8-cbd3-49a4-834b-ee4b31b86f34",
+						"exec": [
+							"var clientId = pm.variables.get(\"clientId\");\r",
+							"\r",
+							"var clientSecret = pm.variables.get(\"clientSecret\");\r",
+							"\r",
+							"var resource = pm.variables.get(\"resource\");\r",
+							"\r",
+							"if (!clientId || !clientSecret || !resource) return;\r",
+							"\r",
+							" \r",
+							"\r",
+							"var currentResourceId = pm.globals.get(\"currentResourceId\");\r",
+							"\r",
+							"var currentClientId = pm.globals.get(\"currentClientId\");\r",
+							"\r",
+							"var expiresOn = pm.globals.get(\"accessTokenExpiry\");\r",
+							"\r",
+							"if (currentResourceId == resource &&\r",
+							"\r",
+							"    clientId == currentClientId &&\r",
+							"\r",
+							"    expiresOn && Date.now() < expiresOn*1000) return;\r",
+							"\r",
+							" \r",
+							"\r",
+							"function urlEncode(obj) {\r",
+							"\r",
+							"    var keys = Object.keys(obj), qParams = [];\r",
+							"\r",
+							"    for (var i = 0; i < keys.length; i++) {\r",
+							"\r",
+							"        qParams.push(keys[i] + \"=\" + encodeURIComponent(obj[keys[i]]));\r",
+							"\r",
+							"    }\r",
+							"\r",
+							"    return qParams.join(\"&\");\r",
+							"\r",
+							"}\r",
+							"\r",
+							"const tokenRequest = {\r",
+							"\r",
+							"  url: 'https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/oauth2/token',\r",
+							"\r",
+							"  method: 'POST',\r",
+							"\r",
+							"  header: [\r",
+							"\r",
+							"    'Content-Type: application/x-www-form-urlencoded',\r",
+							"\r",
+							"    'Accept: application/json'\r",
+							"\r",
+							"  ],\r",
+							"\r",
+							"  body: {\r",
+							"\r",
+							"    mode: 'raw',\r",
+							"\r",
+							"    raw: urlEncode({\r",
+							"\r",
+							"      resource: resource,\r",
+							"\r",
+							"      client_id: clientId,\r",
+							"\r",
+							"      client_secret: clientSecret,\r",
+							"\r",
+							"      grant_type: \"client_credentials\"\r",
+							"\r",
+							"    })\r",
+							"\r",
+							"  }\r",
+							"\r",
+							"}\r",
+							"\r",
+							"pm.sendRequest(tokenRequest, function (err, response) {\r",
+							"\r",
+							"    var jsonResult = response.json();\r",
+							"\r",
+							"    if (err) {\r",
+							"\r",
+							"        console.log(jsonResult);\r",
+							"\r",
+							"    } else {\r",
+							"\r",
+							"        pm.globals.set(\"currentAccessToken\", jsonResult.access_token);\r",
+							"\r",
+							"        pm.globals.set(\"accessTokenExpiry\", jsonResult.expires_on);\r",
+							"\r",
+							"        pm.globals.set(\"currentClientId\", clientId);\r",
+							"\r",
+							"        pm.globals.set(\"currentResourceId\", resource);\r",
+							"\r",
+							"        pm.globals.set(\"tokenExpireDate\", new Date(jsonResult.expires_on*1000).toISOString());\r",
+							"\r",
+							"    }\r",
+							"\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{currentAccessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.gateway.equinor.com/plant/timeseries/v1.3?",
+					"protocol": "https",
+					"host": [
+						"api",
+						"gateway",
+						"equinor",
+						"com"
+					],
+					"path": [
+						"plant",
+						"timeseries",
+						"v1.3"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "fe263b0d-a78d-47ba-8b06-46eadfa88c10",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "bba36a54-4f16-489d-888c-5a67b143e13b",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
