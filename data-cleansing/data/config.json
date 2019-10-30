@@ -1,0 +1,38 @@
+[
+  {
+    "name": "signal_a",
+    "dtype": "float",
+    "valid_range": [
+      0.0,
+      2500.0
+    ],
+    "unit": "N",
+    "interpolate": true,
+    "interpolated_sampling_rate": 0.1,
+    "maximum_allowable_gap": 20.0
+  },
+  {
+    "name": "signal_b",
+    "dtype": "int",
+    "valid_range": [
+      0,
+      10
+    ],
+    "unit": "Hz",
+    "interpolate": false,
+    "interpolated_sampling_rate": null,
+    "maximum_allowable_gap": null
+  },
+  {
+    "name": "signal_c",
+    "dtype": "float",
+    "valid_range": [
+      0.0,
+      1.0
+    ],
+    "unit": "degree",
+    "interpolate": true,
+    "interpolated_sampling_rate": 0.1,
+    "maximum_allowable_gap": 10.0
+  }
+]
