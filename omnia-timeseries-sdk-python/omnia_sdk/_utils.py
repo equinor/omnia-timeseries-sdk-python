@@ -23,11 +23,10 @@ def make_serializable(d):
     Notes
     -----
     numpy.ndarray is converted to list.
-    datetime.datetime object is converted to string (format: %Y%m%d-%H%M%S.%f).
+    datetime.datetime object is converted to ISO format string
     datetime.timedelta object is converted to float (total seconds).
     UUID is converted to string.
     """
-    _dtgfmt = "%Y%m%d-%H%M%S.%f"
 
     def convert_dict(dd):
         for k, v in dd.items():
@@ -47,7 +46,7 @@ def make_serializable(d):
                 raise NotImplementedError(f"Unable to JSON serialize multidimensional ndarrays. Key = '{key}'.")
             v = list(v)
         elif isinstance(v, datetime):
-            v = v.strftime(_dtgfmt)
+            v = v.isoformat()
         elif isinstance(v, timedelta):
             v = v.total_seconds()
         elif type(v) in (dict, OrderedDict, defaultdict):
