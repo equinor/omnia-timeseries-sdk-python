@@ -98,6 +98,32 @@ class TimeSeriesAPI(object):
 
         return TimeSeries(**items[0], omnia_client=self._omnia_client)
 
+    def retrieve_multiple(self, ids: list):
+        """
+        Retrieve multiple time series by id.
+
+        Parameters
+        ----------
+        ids : list[str]
+            Times series id.
+
+        """
+        # TODO: Update when Timeseries API support retrieving multiple timeseries by id
+        timeseries = [self.retrieve(id) for id in ids]
+        return TimeSeriesList(timeseries, omnia_client=self._omnia_client)
+
+    def data(self, id: str):
+        pass
+
+    def first_data(self, id: str):
+        pass
+
+    def latest_data(self, id: str):
+        pass
+
+    def count_data(self, id: str):
+        pass
+
     def create(self):
         raise NotImplementedError
 
@@ -117,12 +143,31 @@ class TimeSeries(object):
 
     Parameters
     ----------
+    id : str, optional
+        Timeseries indentifier
+    externalId : str, optional
+        Id from another (external) system
+    name : str, optional
+        Name of the time series
+    description : str, optional
+        Description of the time series
+    step : bool, optional
+        Is it a step time series
+    unit : str, optional
+        Unit of measure
+    createdTime : str, optional
+        ISO formatted date-time of when the time series was created
+    changedTime : str, optional
+        ISO formatted date-time of when the time series was last changed
+    assetId : str, optional
+        Id of the asset this times eries belong to
+    omnia_client : OmniaClient, optional
+        OMNIA client.
 
     """
     def __init__(self, id: str = None, externalId: str = None, name: str = None, description: str = None,
                  step: bool = None, unit: str = None, createdTime: str = None, changedTime: str = None,
                  assetId: str = None, omnia_client=None):
-
         self.id = id
         self.externalId = externalId
         self.assetId = assetId
@@ -142,6 +187,9 @@ class TimeSeries(object):
 
     def count(self):
         """int: Number of datapoints in this time series."""
+        pass
+
+    def data(self):
         pass
 
     def dump(self):
@@ -170,14 +218,22 @@ class TimeSeries(object):
         # TODO: pandas
         pass
 
+    def to_pandas(self):
+        pass
+
 
 class TimeSeriesList(object):
     """
     List of TimeSeries
     """
-    def __init__(self, data: list, omnia_client=None):
-        self.data = data
+    def __init__(self, timeseries: list, omnia_client=None):
+        self.timeseries = timeseries
         self._omnia_client = omnia_client
+
+    @property
+    def count(self):
+        """int: Number of time series."""
+        return len(self.timeseries)
 
     def dump(self):
         """
@@ -188,7 +244,7 @@ class TimeSeriesList(object):
         List[Dict[str, Any]]
             A list of dicts representing the instance.
         """
-        return [resource.dump() for resource in self.data]
+        return [_.dump() for _ in self.timeseries]
 
     def plot(self):
         pass
