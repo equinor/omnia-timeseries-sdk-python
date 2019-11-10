@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from omnia_sdk import OmniaClient
 
 client = OmniaClient()
@@ -17,7 +16,4 @@ df = tsl.to_pandas()
 print(df)
 
 
-dps = ts.data(limit=100)
-df = dps.to_pandas()
-df.plot()
-plt.show()
+ts.plot(limit=100)

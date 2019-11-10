@@ -4,6 +4,7 @@ Data moadels of basic OMNIA resources
 import json
 import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
 from typing import List, Union
 from ._config import _DATETIME_FORMAT
 from ._utils import make_serializable
@@ -168,6 +169,7 @@ class TimeSeries(OmniaResource):
         ISO date-time format is like "2019-11-07T11:13:21Z".
 
         """
+        # TODO: Collect aggregated data (specify aggregates and granularity)
         return self._omnia_client.time_series.data(self.id, start=start, end=end, limit=limit,
                                                    include_outside_points=include_outside_points)
 
@@ -179,12 +181,18 @@ class TimeSeries(OmniaResource):
         """DataPoint: First data point in time series."""
         raise NotImplementedError
 
-    def plot(self, start=None, end=None, aggregates=None, granularity=None, *args, **kwargs):
+    def plot(self, **kwargs):
         """
-        PLot time series
+        PLot data points in a given time window.
+
+        Parameters
+        ----------
+        kwargs
+            See `Timeseries.data` for options.
         """
-        # TODO: pandas
-        raise NotImplementedError
+        # TODO: Collect aggregated data (specify aggregates and granularity)
+        dps = self.data(**kwargs)
+        dps.plot()
 
 
 class TimeSeriesList(OmniaResourceList):
@@ -259,6 +267,11 @@ class DataPoints(OmniaResourceList):
     def last(self):
         """DataPoint: Data point with the latest time."""
         return self.resources[-1]
+
+    def plot(self):
+        """Plot data points."""
+        self.to_pandas().plot()
+        plt.show()
 
     def to_pandas(self):
         """Convert the data points into a pandas DataFrame.
