@@ -1,9 +1,10 @@
 """
-Timeseries API
+Timeseries API and TimeSeries resources
 """
 import datetime
 import logging
-from typing import Union
+from typing import List
+from .datapoints import DataPoint, DataPoints
 from ._config import _DATETIME_FORMAT
 from ._base import OmniaResource, OmniaResourceList
 
@@ -35,6 +36,8 @@ class TimeSeriesAPI(object):
 
         Returns
         -------
+        list
+            Resources that matched the query.
 
         """
         # TODO: Consider to move this to utilities if it the response structure is generic across endpoints
@@ -78,7 +81,10 @@ class TimeSeriesAPI(object):
         _ = dict(name=name, externalId=external_id, assetId=asset_id, limit=limit, skip=skip,
                  continuationToken=continuation_token)
         parameters = {k: v for k, v in _.items() if v is not None}
-        return self._omnia_client._get(self._resource_path, self._api_version, "", parameters=parameters)
+        items = self._unpack_response(
+            self._omnia_client._get(self._resource_path, self._api_version, "", parameters=parameters)
+        )
+        return TimeSeriesList([TimeSeries(**item, omnia_client=self._omnia_client) for item in items])
 
     def retrieve(self, id: str):
         """
@@ -88,6 +94,12 @@ class TimeSeriesAPI(object):
         ----------
         id : str
             Time series id.
+
+        Returns
+        -------
+        TimeSeries
+            Time series instance.
+
         """
         items = self._unpack_response(self._omnia_client._get(self._resource_path, self._api_version, id))
         if len(items) == 0:
@@ -107,6 +119,11 @@ class TimeSeriesAPI(object):
         ----------
         ids : list[str]
             Times series id.
+
+        Returns
+        -------
+        TimeSeriesList
+            List of time series instances
 
         """
         # TODO: Update when Timeseries API support retrieving multiple timeseries by id
@@ -154,7 +171,10 @@ class TimeSeriesAPI(object):
                 self._resource_path, self._api_version, f"{id}/data", parameters=parameters
             )
         )
-        return DataPoints(items.get('datapoints'))
+        dps = items[0].get("datapoints")
+        time = [dp.get("time") for dp in dps]
+        value = [dp.get("value") for dp in dps]
+        return DataPoints(time, value)
 
     def first_data(self, id: str):
         raise NotImplementedError
@@ -208,7 +228,7 @@ class TimeSeries(OmniaResource):
     """
     def __init__(self, id: str = None, external_id: str = None, name: str = None, description: str = None,
                  step: bool = None, unit: str = None, created_time: str = None, changed_time: str = None,
-                 asset_id: str = None, omnia_client=None):
+                 asset_id: str = None, omnia_client = None):
         self.id = id
         self.external_id = external_id
         self.asset_id = asset_id
@@ -225,6 +245,33 @@ class TimeSeries(OmniaResource):
         raise NotImplementedError
 
     def data(self, start: str = None, end: str = None, limit=None, include_outside_points: bool = False):
+        """
+        Retrieves datapoints in a given time window according to applied parameters.
+
+        Parameters
+        ----------
+        id : str
+            Time series id
+        start: str, optional
+            Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
+        end: str, optional
+            End of data window, date-time in ISO format (RFC3339), defaults to now.
+        limit : int, optional
+            Limit of datapoints to retrieve from within the time window. Between 1-10 000. The default value is 1000.
+        include_outside_points: bool, optional
+            Determines whether or not the points immediately prior to and following the time window should be
+            included in result.
+
+        Returns
+        -------
+        DataPoints
+            Time series data points in time window.
+
+        Notes
+        -----
+        ISO date-time format is like "2019-11-07T11:13:21Z".
+
+        """
         return self._omnia_client.time_series.data(self.id, start=start, end=end, limit=limit,
                                                    include_outside_points=include_outside_points)
 
@@ -250,37 +297,14 @@ class TimeSeries(OmniaResource):
 class TimeSeriesList(OmniaResourceList):
     """
     List of TimeSeries
+
+    Parameters
+    ----------
+    timeseries : List[TimeSeries]
     """
-    def __init__(self, timeseries: list, omnia_client=None):
+    def __init__(self, timeseries: List[TimeSeries], omnia_client = None):
         self.resources = timeseries
         self._omnia_client = omnia_client
 
     def plot(self):
         raise NotImplementedError
-
-
-class DataPoint(OmniaResource):
-    """
-    An object representing a data point.
-    """
-    def __init__(self, time: str=None, value: Union[int, float]=None, status: int=None):
-        self.time = time
-        self.value = value
-        self.status = status
-
-    def dump(self):
-        """
-        Dump the instance into a json serializable Python data type.
-
-        Returns
-        -------
-        Dict[str, Any]
-            A dictionary representation of the instance.
-        """
-        return {key: value for key, value in self.__dict__.items() if value is not None and not key.startswith("_")}
-
-
-class DataPoints(object):
-    """
-    An object representing a list of data points.
-    """
