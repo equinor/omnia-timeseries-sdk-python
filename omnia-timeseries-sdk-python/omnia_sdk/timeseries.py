@@ -1,11 +1,11 @@
 """
 Timeseries API
 """
-import json
 import datetime
 import logging
+from typing import Union
 from ._config import _DATETIME_FORMAT
-from ._utils import make_serializable
+from ._base import OmniaResource, OmniaResourceList
 
 
 class TimeSeriesAPI(object):
@@ -45,7 +45,8 @@ class TimeSeriesAPI(object):
         else:
             return items
 
-    def list(self, **kwargs):
+    def list(self, name: str=None, external_id: str=None, asset_id: str=None, limit: int=None, skip: int=None,
+             continuation_token: str=None):
         """
         List over all timeseries.
 
@@ -53,16 +54,16 @@ class TimeSeriesAPI(object):
         ----------
         name : str, optional
             Name of the timeseries
-        externalId : str, optional
+        external_id : str, optional
             ID from another (external) system provided by client
-        assetId : str, optional
+        asset_id : str, optional
             ID of the asset this timeseries belongs to
         limit : int, optional
             Limit the number of results to retrieve, between 1-1000.
         skip : int, optional
             Retrieve results except the `skip` first ones.
-        continuationToken : str, optional
-            The continuationToken for next result set
+        continuation_token : str, optional
+            The continuation_token for next result set
 
         Returns
         -------
@@ -74,10 +75,10 @@ class TimeSeriesAPI(object):
         The web API uses camelcase parameters.
 
         """
-        _ALLOWED = ["name", "externalId", "assetId", "limit", "skip", "continuationToken"]
-        endpoint = ""
-        parameters = {k: v for k, v in kwargs.items() if k in _ALLOWED and v is not None}
-        return self._omnia_client._get(self._resource_path, self._api_version, endpoint, parameters=parameters)
+        _ = dict(name=name, externalId=external_id, assetId=asset_id, limit=limit, skip=skip,
+                 continuationToken=continuation_token)
+        parameters = {k: v for k, v in _.items() if v is not None}
+        return self._omnia_client._get(self._resource_path, self._api_version, "", parameters=parameters)
 
     def retrieve(self, id: str):
         """
@@ -112,17 +113,55 @@ class TimeSeriesAPI(object):
         timeseries = [self.retrieve(id) for id in ids]
         return TimeSeriesList(timeseries, omnia_client=self._omnia_client)
 
-    def data(self, id: str):
-        pass
+    def data(self, id: str, start: str = None, end: str = None, limit=None, include_outside_points: bool = False):
+        """
+        Retrieves datapoints in a given time window according to applied parameters.
+
+        Parameters
+        ----------
+        id : str
+            Time series id
+        start: str, optional
+            Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
+        end: str, optional
+            End of data window, date-time in ISO format (RFC3339), defaults to now.
+        limit : int, optional
+            Limit of datapoints to retrieve from within the time window. Between 1-10 000. The default value is 1000.
+        include_outside_points: bool, optional
+            Determines whether or not the points immediately prior to and following the time window should be
+            included in result.
+
+        Returns
+        -------
+        DataPoints
+            Time series data points in time window.
+
+        Notes
+        -----
+        ISO date-time format is like "2019-11-07T11:13:21Z".
+
+        """
+        if end is None:
+            end = datetime.datetime.now().isoformat()
+        if start is None:
+            start = (end - datetime.timedelta(days=1)).isoformat()
+        _ = dict(startTime=start, endTime=end, limit=limit, includeOutsidePoints=include_outside_points)
+        parameters = {k: v for k, v in _.items() if v is not None}
+        items = self._unpack_response(
+            self._omnia_client._get(
+                self._resource_path, self._api_version, f"{id}/data", parameters=parameters
+            )
+        )
+        return DataPoints(items.get('datapoints'))
 
     def first_data(self, id: str):
-        pass
+        raise NotImplementedError
 
     def latest_data(self, id: str):
-        pass
+        raise NotImplementedError
 
     def count_data(self, id: str):
-        pass
+        raise NotImplementedError
 
     def create(self):
         raise NotImplementedError
@@ -137,7 +176,7 @@ class TimeSeriesAPI(object):
         raise NotImplementedError
 
 
-class TimeSeries(object):
+class TimeSeries(OmniaResource):
     """
     Timeseries resource
 
@@ -145,7 +184,7 @@ class TimeSeries(object):
     ----------
     id : str, optional
         Timeseries indentifier
-    externalId : str, optional
+    external_id : str, optional
         Id from another (external) system
     name : str, optional
         Name of the time series
@@ -155,42 +194,77 @@ class TimeSeries(object):
         Is it a step time series
     unit : str, optional
         Unit of measure
-    createdTime : str, optional
+    created_time : str, optional
         ISO formatted date-time of when the time series was created
-    changedTime : str, optional
+    changed_time : str, optional
         ISO formatted date-time of when the time series was last changed
-    assetId : str, optional
+    asset_id : str, optional
         Id of the asset this times eries belong to
     omnia_client : OmniaClient, optional
         OMNIA client.
 
     """
-    def __init__(self, id: str = None, externalId: str = None, name: str = None, description: str = None,
-                 step: bool = None, unit: str = None, createdTime: str = None, changedTime: str = None,
-                 assetId: str = None, omnia_client=None):
+    def __init__(self, id: str = None, external_id: str = None, name: str = None, description: str = None,
+                 step: bool = None, unit: str = None, created_time: str = None, changed_time: str = None,
+                 asset_id: str = None, omnia_client=None):
         self.id = id
-        self.externalId = externalId
-        self.assetId = assetId
+        self.external_id = external_id
+        self.asset_id = asset_id
         self.name = name
         self.description = description
         self.step = step
         self.unit = unit
-        self.createdTime = datetime.datetime.strptime(createdTime, _DATETIME_FORMAT)
-        self.changedTime = datetime.datetime.strptime(changedTime, _DATETIME_FORMAT)
+        self.created_time = datetime.datetime.strptime(created_time, _DATETIME_FORMAT)
+        self.changed_time = datetime.datetime.strptime(changed_time, _DATETIME_FORMAT)
         self._omnia_client = omnia_client
-
-    def __str__(self):
-        return json.dumps(make_serializable(self.dump()), indent=2)
-
-    def __repr__(self):
-        return self.__str__()
 
     def count(self):
         """int: Number of datapoints in this time series."""
-        pass
+        raise NotImplementedError
 
-    def data(self):
-        pass
+    def data(self, start: str = None, end: str = None, limit=None, include_outside_points: bool = False):
+        return self._omnia_client.time_series.data(self.id, start=start, end=end, limit=limit,
+                                                   include_outside_points=include_outside_points)
+
+    def latest(self):
+        """DataPoint: Latest data point in time series."""
+        raise NotImplementedError
+
+    def first(self):
+        """DataPoint: First data point in time series."""
+        raise NotImplementedError
+
+    def plot(self, start=None, end=None, aggregates=None, granularity=None, *args, **kwargs):
+        """
+        PLot time series
+        """
+        # TODO: pandas
+        raise NotImplementedError
+
+    def to_pandas(self):
+        raise NotImplementedError
+
+
+class TimeSeriesList(OmniaResourceList):
+    """
+    List of TimeSeries
+    """
+    def __init__(self, timeseries: list, omnia_client=None):
+        self.resources = timeseries
+        self._omnia_client = omnia_client
+
+    def plot(self):
+        raise NotImplementedError
+
+
+class DataPoint(OmniaResource):
+    """
+    An object representing a data point.
+    """
+    def __init__(self, time: str=None, value: Union[int, float]=None, status: int=None):
+        self.time = time
+        self.value = value
+        self.status = status
 
     def dump(self):
         """
@@ -203,48 +277,8 @@ class TimeSeries(object):
         """
         return {key: value for key, value in self.__dict__.items() if value is not None and not key.startswith("_")}
 
-    def latest(self):
-        """DataPoint: Latest data point in time series."""
-        pass
 
-    def first(self):
-        """DataPoint: First data point in time series."""
-        pass
-
-    def plot(self, start=None, end=None, aggregates=None, granularity=None, *args, **kwargs):
-        """
-        PLot time series
-        """
-        # TODO: pandas
-        pass
-
-    def to_pandas(self):
-        pass
-
-
-class TimeSeriesList(object):
+class DataPoints(object):
     """
-    List of TimeSeries
+    An object representing a list of data points.
     """
-    def __init__(self, timeseries: list, omnia_client=None):
-        self.timeseries = timeseries
-        self._omnia_client = omnia_client
-
-    @property
-    def count(self):
-        """int: Number of time series."""
-        return len(self.timeseries)
-
-    def dump(self):
-        """
-        Dump the instance into a json serializable Python data type.
-
-        Returns
-        -------
-        List[Dict[str, Any]]
-            A list of dicts representing the instance.
-        """
-        return [_.dump() for _ in self.timeseries]
-
-    def plot(self):
-        pass
