@@ -5,6 +5,12 @@ import numpy as np
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 import uuid
+import re
+from ._config import _DATETIME_FORMAT
+
+
+first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+all_cap_re = re.compile('([a-z0-9])([A-Z])')
 
 
 def make_serializable(d):
@@ -46,7 +52,7 @@ def make_serializable(d):
                 raise NotImplementedError(f"Unable to JSON serialize multidimensional ndarrays. Key = '{key}'.")
             v = list(v)
         elif isinstance(v, datetime):
-            v = v.isoformat()
+            v = v.strftime(_DATETIME_FORMAT)
         elif isinstance(v, timedelta):
             v = v.total_seconds()
         elif type(v) in (dict, OrderedDict, defaultdict):

@@ -142,10 +142,12 @@ class TimeSeriesAPI(object):
 
         """
         if end is None:
-            end = datetime.datetime.now().isoformat()
+            end = datetime.datetime.now()
         if start is None:
-            start = (end - datetime.timedelta(days=1)).isoformat()
-        _ = dict(startTime=start, endTime=end, limit=limit, includeOutsidePoints=include_outside_points)
+            start = (end - datetime.timedelta(days=1))
+
+        _ = dict(startTime=start.strftime(_DATETIME_FORMAT), endTime=end.strftime(_DATETIME_FORMAT), limit=limit,
+                 includeOutsidePoints=include_outside_points)
         parameters = {k: v for k, v in _.items() if v is not None}
         items = self._unpack_response(
             self._omnia_client._get(
