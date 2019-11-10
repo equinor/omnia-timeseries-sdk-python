@@ -1,14 +1,11 @@
 """
-Timeseries API and TimeSeries resources
+Timeseries API
 """
 import datetime
 import logging
-from typing import List
-from .datapoints import DataPoint, DataPoints
+from .resources import DataPoint, DataPoints, TimeSeries, TimeSeriesList
 from ._config import _DATETIME_FORMAT
-from ._base import OmniaResource, OmniaResourceList
 from ._utils import uncamel
-
 
 
 class TimeSeriesAPI(object):
@@ -197,116 +194,4 @@ class TimeSeriesAPI(object):
         raise NotImplementedError
 
     def search(self):
-        raise NotImplementedError
-
-
-class TimeSeries(OmniaResource):
-    """
-    Timeseries resource
-
-    Parameters
-    ----------
-    id : str, optional
-        Timeseries indentifier
-    external_id : str, optional
-        Id from another (external) system
-    name : str, optional
-        Name of the time series
-    description : str, optional
-        Description of the time series
-    step : bool, optional
-        Is it a step time series
-    unit : str, optional
-        Unit of measure
-    created_time : str, optional
-        ISO formatted date-time of when the time series was created
-    changed_time : str, optional
-        ISO formatted date-time of when the time series was last changed
-    asset_id : str, optional
-        Id of the asset this times eries belong to
-    omnia_client : OmniaClient, optional
-        OMNIA client.
-
-    """
-    def __init__(self, id: str = None, external_id: str = None, name: str = None, description: str = None,
-                 step: bool = None, unit: str = None, created_time: str = None, changed_time: str = None,
-                 asset_id: str = None, omnia_client = None):
-        self.id = id
-        self.external_id = external_id
-        self.asset_id = asset_id
-        self.name = name
-        self.description = description
-        self.step = step
-        self.unit = unit
-        self.created_time = datetime.datetime.strptime(created_time, _DATETIME_FORMAT)
-        self.changed_time = datetime.datetime.strptime(changed_time, _DATETIME_FORMAT)
-        self._omnia_client = omnia_client
-
-    def count(self):
-        """int: Number of datapoints in this time series."""
-        raise NotImplementedError
-
-    def data(self, start: str = None, end: str = None, limit=None, include_outside_points: bool = False):
-        """
-        Retrieves datapoints in a given time window according to applied parameters.
-
-        Parameters
-        ----------
-        id : str
-            Time series id
-        start: str, optional
-            Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
-        end: str, optional
-            End of data window, date-time in ISO format (RFC3339), defaults to now.
-        limit : int, optional
-            Limit of datapoints to retrieve from within the time window. Between 1-10 000. The default value is 1000.
-        include_outside_points: bool, optional
-            Determines whether or not the points immediately prior to and following the time window should be
-            included in result.
-
-        Returns
-        -------
-        DataPoints
-            Time series data points in time window.
-
-        Notes
-        -----
-        ISO date-time format is like "2019-11-07T11:13:21Z".
-
-        """
-        return self._omnia_client.time_series.data(self.id, start=start, end=end, limit=limit,
-                                                   include_outside_points=include_outside_points)
-
-    def latest(self):
-        """DataPoint: Latest data point in time series."""
-        raise NotImplementedError
-
-    def first(self):
-        """DataPoint: First data point in time series."""
-        raise NotImplementedError
-
-    def plot(self, start=None, end=None, aggregates=None, granularity=None, *args, **kwargs):
-        """
-        PLot time series
-        """
-        # TODO: pandas
-        raise NotImplementedError
-
-    def to_pandas(self):
-        raise NotImplementedError
-
-
-class TimeSeriesList(OmniaResourceList):
-    """
-    List of TimeSeries
-
-    Parameters
-    ----------
-    timeseries : List[TimeSeries]
-    """
-    def __init__(self, timeseries: List[TimeSeries], omnia_client = None):
-        self.resources = timeseries
-        self._omnia_client = omnia_client
-
-    def plot(self):
         raise NotImplementedError
