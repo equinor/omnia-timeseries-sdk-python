@@ -68,3 +68,41 @@ def make_serializable(d):
     else:
         raise NotImplementedError(f"Unable to convert object of type '{type(d)}' to JSON serializable.")
     return d
+
+
+def uncamel(d):
+    """
+    Convert data with camelCase keys to snake_case
+
+    Parameters
+    ----------
+    d : str or list or dict
+        Data with camelCase keys
+
+    Returns
+    -------
+    str or list or dict
+        Data with snake case keys
+    """
+    def uncamel_string(s):
+        s1 = first_cap_re.sub(r'\1_\2', s)
+        return all_cap_re.sub(r'\1_\2', s1).lower()
+
+    if isinstance(d, str):
+        return uncamel_string(d)
+    elif isinstance(d, list):
+        return [uncamel(_) for _ in d]
+    elif isinstance(d, dict):
+        dd = dict()
+        for k, v in d.items():
+            if isinstance(k, str):
+                k = uncamel_string(k)
+
+            elif isinstance(v, (list, dict)):
+                v = uncamel(v)
+
+            else:
+                pass
+
+            dd[k] = v
+        return dd

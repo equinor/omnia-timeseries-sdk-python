@@ -7,6 +7,8 @@ from typing import List
 from .datapoints import DataPoint, DataPoints
 from ._config import _DATETIME_FORMAT
 from ._base import OmniaResource, OmniaResourceList
+from ._utils import uncamel
+
 
 
 class TimeSeriesAPI(object):
@@ -46,7 +48,7 @@ class TimeSeriesAPI(object):
         except AttributeError:
             return list()
         else:
-            return items
+            return uncamel(items)
 
     def list(self, name: str=None, external_id: str=None, asset_id: str=None, limit: int=None, skip: int=None,
              continuation_token: str=None):
