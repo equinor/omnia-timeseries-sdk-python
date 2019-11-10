@@ -70,7 +70,7 @@ def make_serializable(d):
     return d
 
 
-def uncamel(d):
+def to_snake_case(d):
     """
     Convert data with camelCase keys to snake_case
 
@@ -84,22 +84,60 @@ def uncamel(d):
     str or list or dict
         Data with snake case keys
     """
-    def uncamel_string(s):
+    def snake(s):
         s1 = first_cap_re.sub(r'\1_\2', s)
         return all_cap_re.sub(r'\1_\2', s1).lower()
 
     if isinstance(d, str):
-        return uncamel_string(d)
+        return snake(d)
     elif isinstance(d, list):
-        return [uncamel(_) for _ in d]
+        return [to_snake_case(_) for _ in d]
     elif isinstance(d, dict):
         dd = dict()
         for k, v in d.items():
             if isinstance(k, str):
-                k = uncamel_string(k)
+                k = snake(k)
 
             elif isinstance(v, (list, dict)):
-                v = uncamel(v)
+                v = to_snake_case(v)
+
+            else:
+                pass
+
+            dd[k] = v
+        return dd
+
+
+def to_camel_case(d):
+    """
+    Convert data with snake_case keys to lowerCamelCase
+
+    Parameters
+    ----------
+    d : str or list or dict
+        Data with snake case keys
+
+    Returns
+    -------
+    str or list or dict
+        Data with camel case keys
+    """
+    def camel(s):
+        first, *others = s.split('_')
+        return ''.join([first.lower(), *map(str.title, others)])
+
+    if isinstance(d, str):
+        return camel(d)
+    elif isinstance(d, list):
+        return [to_camel_case(_) for _ in d]
+    elif isinstance(d, dict):
+        dd = dict()
+        for k, v in d.items():
+            if isinstance(k, str):
+                k = camel(k)
+
+            elif isinstance(v, (list, dict)):
+                v = to_camel_case(v)
 
             else:
                 pass

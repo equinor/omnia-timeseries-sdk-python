@@ -16,9 +16,14 @@ class OmniaResource(object):
     def __repr__(self):
         return self.__str__()
 
-    def dump(self):
+    def dump(self, camel_case: bool = False):
         """
         Dump the instance into a json serializable Python data type.
+
+        Parameters
+        ----------
+        camel_case : bool, optional
+            Use camelCase for attribute names. Defaults to False.
 
         Returns
         -------
@@ -37,9 +42,14 @@ class OmniaResourceList(OmniaResource):
         """int: Number of resources."""
         return len(self.resources)
 
-    def dump(self):
+    def dump(self, camel_case: bool = False):
         """
         Dump the instance into a json serializable Python data type.
+
+        Parameters
+        ----------
+        camel_case : bool, optional
+            Use camelCase for attribute names. Defaults to False.
 
         Returns
         -------

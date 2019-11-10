@@ -5,7 +5,7 @@ import datetime
 import logging
 from .resources import DataPoint, DataPoints, TimeSeries, TimeSeriesList
 from ._config import _DATETIME_FORMAT
-from ._utils import uncamel
+from ._utils import to_snake_case
 
 
 class TimeSeriesAPI(object):
@@ -45,10 +45,10 @@ class TimeSeriesAPI(object):
         except AttributeError:
             return list()
         else:
-            return uncamel(items)
+            return to_snake_case(items)
 
-    def list(self, name: str=None, external_id: str=None, asset_id: str=None, limit: int=None, skip: int=None,
-             continuation_token: str=None):
+    def list(self, name: str = None, external_id: str = None, asset_id: str = None, limit: int = None, skip: int = None,
+             continuation_token: str = None):
         """
         List over all timeseries.
 
