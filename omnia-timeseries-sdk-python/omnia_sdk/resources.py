@@ -3,6 +3,7 @@ Data moadels of basic OMNIA resources
 """
 import json
 import datetime
+import pandas as pd
 from typing import List, Union
 from ._config import _DATETIME_FORMAT
 from ._utils import make_serializable
@@ -32,6 +33,29 @@ class OmniaResource(object):
         """
         return {key: value for key, value in self.__dict__.items() if value is not None and not key.startswith("_")}
 
+    def to_pandas(self, ignore: List[str] = None):
+        """
+        Convert the instance into a pandas DataFrame.
+
+        Parameters
+        ----------
+        ignore : List[str]
+            List of row keys to not include when converting to a data frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The dataframe.
+        """
+        ignore = list() if ignore is None else ignore
+        dumped = self.dump()
+
+        df = pd.DataFrame(columns=["value"])
+        for name, value in dumped.items():
+            if name not in ignore:
+                df.loc[name] = [value]
+        return df
+
 
 class OmniaResourceList(OmniaResource):
     """List of basic resource objects."""
@@ -56,7 +80,18 @@ class OmniaResourceList(OmniaResource):
         List[Dict[str, Any]]
             A list of dicts representing the instance.
         """
-        return [_.dump() for _ in self.resources]
+        return [_.dump(camel_case=camel_case) for _ in self.resources]
+
+    def to_pandas(self, ignore: List[str] = None):
+        """
+        Convert the instance into a pandas DataFrame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The dataframe.
+        """
+        return pd.DataFrame(self.dump())
 
 
 class TimeSeries(OmniaResource):
@@ -151,9 +186,6 @@ class TimeSeries(OmniaResource):
         # TODO: pandas
         raise NotImplementedError
 
-    def to_pandas(self):
-        raise NotImplementedError
-
 
 class TimeSeriesList(OmniaResourceList):
     """
@@ -184,6 +216,8 @@ class DataPoint(OmniaResource):
     status : int, optional
         Status code.
     """
+
+    # TODO: Create aggregate properties (max, min, stdev, count etc), defined on init if any
     def __init__(self, time: str = None, value: Union[int, float] = None, status: int = None):
         self.time = datetime.datetime.strptime(time, _DATETIME_FORMAT)
         self.value = value
@@ -202,6 +236,7 @@ class DataPoints(OmniaResourceList):
         Data point values
 
     """
+    # TODO: Create aggregate properties (max, min, stdev, count etc), based on DataPoint
     def __init__(self, time: List[str], value: List[Union[int, float]]):
         self.resources = [DataPoint(time=t, value=v) for t, v in zip(time, value)]
 
@@ -224,3 +259,17 @@ class DataPoints(OmniaResourceList):
     def last(self):
         """DataPoint: Data point with the latest time."""
         return self.resources[-1]
+
+    def to_pandas(self):
+        """Convert the data points into a pandas DataFrame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            THe dataframe
+
+        """
+        # TODO: Add aggregates when ready
+        data = dict(value=self.value)
+        df = pd.DataFrame(data, index=pd.DatetimeIndex(data=self.time))
+        return df

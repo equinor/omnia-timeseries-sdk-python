@@ -1,12 +1,23 @@
+import matplotlib.pyplot as plt
 from omnia_sdk import OmniaClient
-
 
 client = OmniaClient()
 ts = client.time_series.retrieve(id='bdc2e4aa-83de-458b-b989-675fa4e58aac')
-dps = ts.data()
 
-print(type(dps))
-print(dps.count)
-print(dps)
+df = ts.to_pandas()
+print(df)
 
 
+tsl = client.time_series.retrieve_multiple(
+    ids=['bdc2e4aa-83de-458b-b989-675fa4e58aac',
+         '16b569a6-e31a-4da6-b4f8-0b8354c33d2b',
+         'd6f5e549-5766-4275-8024-f01084771dc1'
+         ])
+df = tsl.to_pandas()
+print(df)
+
+
+dps = ts.data(limit=100)
+df = dps.to_pandas()
+df.plot()
+plt.show()
