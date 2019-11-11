@@ -84,7 +84,7 @@ class OmniaResourceList(OmniaResource):
         List[Dict[str, Any]]
             A list of dicts representing the instance.
         """
-        return [_.dump(camel_case=camel_case) for _ in self.resources]
+        return [_.dump(camel_case=camel_case) for _ in self]
 
     def to_pandas(self, ignore: List[str] = None):
         """
@@ -244,6 +244,12 @@ class DataPoint(OmniaResource):
 
     Parameters
     ----------
+    id : str, optional
+        Id of the time series which the datapoints belong to.
+    name : str, optional
+        Name of the time series which the datapoints belong to.
+    unit : str, optional
+        Physical unit of measure.
     time : str, optional
         ISO formatted date time string.
     value : Union[int, float], optional
@@ -253,7 +259,11 @@ class DataPoint(OmniaResource):
     """
 
     # TODO: Create aggregate properties (max, min, stdev, count etc), defined on init if any
-    def __init__(self, time: str = None, value: Union[int, float] = None, status: int = None):
+    def __init__(self, id: str = None, name: str = None, unit: str = None, time: str = None,
+                 value: Union[int, float] = None, status: int = None):
+        self.id = id
+        self.name = name
+        self.unit = unit
         self.time = from_datetime_string(time)
         self.value = value
         self.status = status
@@ -265,15 +275,25 @@ class DataPoints(OmniaResourceList):
 
     Parameters
     ----------
-    time : List[str]
+    id : str, optional
+        Id of the time series which the datapoints belong to.
+    name : str, optional
+        Name of the time series which the datapoints belong to.
+    unit : str, optional
+        Physical unit of measure.
+    time : List[str], optional
         ISO formatted date time string
-    values : List[Union[int, float]]
+    values : List[Union[int, float]], optional
         Data point values
 
     """
     # TODO: Create aggregate properties (max, min, stdev, count etc), based on DataPoint
-    def __init__(self, time: List[str], value: List[Union[int, float]]):
+    def __init__(self, id: str = None, name: str = None, unit: str = None, time: List[str] = None,
+                 value: List[Union[int, float]] = None):
         self.resources = [DataPoint(time=t, value=v) for t, v in zip(time, value)]
+        self.id = id
+        self.name = name
+        self.unit = unit
 
     @property
     def time(self):
@@ -295,21 +315,57 @@ class DataPoints(OmniaResourceList):
         """DataPoint: Data point with the latest time."""
         return self.resources[-1]
 
+    def dump(self, camel_case: bool = False):
+        """
+        Dump the instance into a json serializable Python data type.
+
+        Parameters
+        ----------
+        camel_case : bool, optional
+            Use camelCase for attribute names. Defaults to False.
+
+        Returns
+        -------
+        List[Dict[str, Any]]
+            A list of dicts representing the instance.
+        """
+        dumped = {
+            "id": self.id,
+            "name": self.name,
+            "unit": self.unit,
+            "datapoints": [_.dump(camel_case=camel_case) for _ in self]
+        }
+        return dumped
+
     def plot(self):
         """Plot data points."""
         self.to_pandas().plot()
         plt.show()
 
-    def to_pandas(self):
-        """Convert the data points into a pandas DataFrame.
+    def to_pandas(self, column_name: str = "name"):
+        """
+        Convert the data points into a pandas DataFrame.
+
+        Parameters
+        ----------
+        column_name: {name, id}
+            Which field to use as column header. Defaults to 'name'.
 
         Returns
         -------
         pandas.DataFrame
-            THe dataframe
+            The dataframe
 
         """
         # TODO: Add aggregates when ready
-        data = dict(value=self.value)
+        if column_name == "name":
+            header = f"{self.name} [{self.unit}]"
+        else:
+            header = f"{self.id} [{self.unit}]"
+
+        data = {
+            header: self.value
+        }
+
         df = pd.DataFrame(data, index=pd.DatetimeIndex(data=self.time))
         return df

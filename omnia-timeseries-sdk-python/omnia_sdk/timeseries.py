@@ -169,10 +169,14 @@ class TimeSeriesAPI(object):
                 self._resource_path, self._api_version, f"{id}/data", parameters=parameters
             )
         )
-        dps = items[0].get("datapoints")
+        ts = items[0]   # should be only 1 time series
+        id = ts.get("id")
+        name = ts.get("name")
+        unit = ts.get("unit")
+        dps = ts.get("datapoints")
         time = [dp.get("time") for dp in dps]
         value = [dp.get("value") for dp in dps]
-        return DataPoints(time, value)
+        return DataPoints(id=id, name=name, unit=unit, time=time, value=value)
 
     def first_data(self, id: str, after_time: str = None):
         """
@@ -199,8 +203,12 @@ class TimeSeriesAPI(object):
                 self._resource_path, self._api_version, f"{id}/data/first", parameters=parameters
             )
         )
-        dp = items[0].get("datapoints")[0]
-        return DataPoint(**dp)
+        ts = items[0]  # should be only 1 time series
+        id = ts.get("id")
+        name = ts.get("name")
+        unit = ts.get("unit")
+        dp = ts.get("datapoints")[0]
+        return DataPoint(id=id, name=name, unit=unit, **dp)
 
     def latest_data(self, id: str, before_time : str = None):
         """
@@ -227,8 +235,12 @@ class TimeSeriesAPI(object):
                 self._resource_path, self._api_version, f"{id}/data/latest", parameters=parameters
             )
         )
-        dp = items[0].get("datapoints")[0]
-        return DataPoint(**dp)
+        ts = items[0]  # should be only 1 time series
+        id = ts.get("id")
+        name = ts.get("name")
+        unit = ts.get("unit")
+        dp = ts.get("datapoints")[0]
+        return DataPoint(id=id, name=name, unit=unit, **dp)
 
     def count_data(self, id: str):
         raise NotImplementedError
