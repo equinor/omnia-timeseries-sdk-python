@@ -6,26 +6,8 @@ Python software developer kit for the Omnia Timeseries API.
 
 ### About
 
-Data cleansing or data cleaning is the process of detecting and correcting (or removing) corrupt or inaccurate 
-data from a data set and refers to identifying incomplete, incorrect, inaccurate or irrelevant parts of the data
-and then replacing, modifying, or deleting the dirty or coarse data. The inconsistencies detected and modified or 
-removed may have been originally caused by user entry errors, by corruption in transmission or storage.
-
-High-quality data needs to pass a set of quality criteria including:
-- Validity
-    - type constraints
-    - range constraints
-    - regular expresion patterns
-    - cross field validation (like this and that cannot happen occur at the same time)
-- Accuracy
-- Completeness
-- Consistency (like duplicated data points)
-- Uniformity (the degree to which a data set is measured using the same units)
-
-`dclutter` ensures *validity* and *uniformity*, removes duplicates (*consistency*) and can to some extent remedy
-lack of *completeness*. However accuracy is very hard to achieve through data-cleansing in the
-general case, because it requires having access to "the truth". The same goes for completeness as it is not
-generally possible to back and capture data that was not initially recorded.     
+This is the Python SDK for developers and data scientists working with Omnia. The package integrates with pandas to
+help you work easily and efficiently with the data.     
 
 ### Getting started
 
@@ -41,11 +23,21 @@ pip install omnia_sdk
 pip install --upgrade omnia_sdk
 ```
 
-You can now import dclutter in your own scripts to create custom workflows etc.
+To access Omnia you have to set the following environmental variables. The values are provided by the Omnia administrators.
+```console
+set omniaResourceId="id-of-the-omnia-resource"
+set omniaClientId="your-client-id"
+set omniaClientSecret="very-very-secret-shared-key"
+```
+
+Import the SDK in your own scripts...
 
 ```python
 import omnia_sdk
 ```
+
+... and get to work. [Here](https://github.com/equinor/simpos/blob/master/omnia-timeseries-sdk-python/examples/introduction.ipynb) 
+is an introduction. 
 
 Take a look at the resources listed below to learn more.
 
@@ -55,7 +47,8 @@ Take a look at the resources listed below to learn more.
 * [**Issues**](https://github.com/equinor/simpos/issues)
 * [**Changelog**](https://github.com/equinor/simpos/releases)
 * [**Documentation**](https://github.com/equinor/simpos/omnia-timeseries-sdk-python/blob/master/README.md)
-<!---* [**Download**](https://app.packagr.app/packages/951d77bf-73e0-40dc-8d4a-e01a22916460/)--->
+* [**Download**]()
+* [**Examples**](https://github.com/equinor/simpos/tree/master/omnia-timeseries-sdk-python/examples)
 
 ## Contribute
 
@@ -64,7 +57,7 @@ purposes. See deployment for notes on how to deploy the project on a live system
 
 ### Prerequisites
 
-Install Python version 3.6 or later from either https://www.python.org or https://www.anaconda.com.
+Install Python version 3.7 or later from either https://www.python.org or https://www.anaconda.com.
 
 ### Clone the source code repository
 
