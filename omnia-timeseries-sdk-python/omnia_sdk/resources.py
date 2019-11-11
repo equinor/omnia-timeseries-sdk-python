@@ -2,7 +2,6 @@
 Data moadels of basic OMNIA resources
 """
 import json
-import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List, Union
@@ -369,3 +368,42 @@ class DataPoints(OmniaResourceList):
 
         df = pd.DataFrame(data, index=pd.DatetimeIndex(data=self.time))
         return df
+
+
+class DataPointsList(OmniaResourceList):
+    """
+    An object representing a list of data points for different time series.
+
+    Parameters
+    ----------
+    dps : List[DataPoints]
+        Data points
+    """
+    def __init__(self, dps: List[DataPoints]):
+        self.resources = dps
+
+    def plot(self):
+        """Plot data points."""
+        self.to_pandas().plot()
+        plt.show()
+
+    def to_pandas(self, column_names: str = "name"):
+        """
+        Convert the data points list into a pandas DataFrame.
+
+        Parameters
+        ----------
+        column_names : {name, id}
+            Which field to use as column header. Defaults to 'name'.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The dataframe.
+        """
+        dfs = [dps.to_pandas(column_name=column_names) for dps in self]
+        if dfs:
+            df = pd.concat(dfs, axis="columns")
+            return df
+        else:
+            return pd.DataFrame()
