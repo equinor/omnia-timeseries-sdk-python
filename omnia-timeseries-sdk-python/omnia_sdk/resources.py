@@ -61,6 +61,10 @@ class OmniaResourceList(OmniaResource):
     """List of basic resource objects."""
     resources = list()
 
+    def __iter__(self):
+        for r in self.resources:
+            yield r
+
     @property
     def count(self):
         """int: Number of resources."""
