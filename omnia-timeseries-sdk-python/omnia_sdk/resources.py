@@ -209,12 +209,12 @@ class TimeSeries(OmniaResource):
 
     def plot(self, **kwargs):
         """
-        PLot data points in a given time window.
+        Plot data points in a given time window.
 
         Parameters
         ----------
         kwargs
-            See `Timeseries.data` for options.
+            See `TimeSeries.data` for options.
         """
         # TODO: Collect aggregated data (specify aggregates and granularity)
         dps = self.data(**kwargs)
@@ -228,13 +228,41 @@ class TimeSeriesList(OmniaResourceList):
     Parameters
     ----------
     timeseries : List[TimeSeries]
+        The various time series.
     """
-    def __init__(self, timeseries: List[TimeSeries], omnia_client = None):
+    def __init__(self, timeseries: List[TimeSeries], omnia_client=None):
         self.resources = timeseries
         self._omnia_client = omnia_client
 
-    def plot(self):
-        raise NotImplementedError
+    def data(self, **kwargs):
+        """
+        Retrieves datapoints in a given time window according to applied parameters.
+
+        Parameters
+        ----------
+        kwargs
+            See `TimeSeries.data` for options.
+
+        Returns
+        -------
+        DataPointsList
+            List of data points in time window for the various time series.
+
+        """
+        dps = [ts.data(**kwargs) for ts in self]
+        return DataPointsList(dps)
+
+    def plot(self, **kwargs):
+        """
+        Plot data points from various time series in a given time window.
+
+        Parameters
+        ----------
+        kwargs
+            See `TimeSeries.data` for options.
+        """
+        dps = self.data(**kwargs)
+        dps.plot()
 
 
 class DataPoint(OmniaResource):
