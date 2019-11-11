@@ -6,34 +6,34 @@ Python software developer kit for the Omnia Timeseries API.
 
 ### About
 
-This is the Python SDK for developers and data scientists working with Omnia. The package integrates with pandas to
-help you work easily and efficiently with the data.     
+This is the Python SDK for developers and data scientists working with Omnia Timeseris. The package integrates with 
+pandas to help you work easily and efficiently with the data.     
 
 ### Getting started
 
 Run the below command in a Python environment to install the latest release
 
 ```console
-pip install omnia_sdk
+pip install omnia_timeseries_sdk
 ```
 
 .. or upgrade existing installation
 
 ```console
-pip install --upgrade omnia_sdk
+pip install --upgrade omnia_timeseries_sdk
 ```
 
 To access Omnia you have to set the following environmental variables. The values are provided by the Omnia administrators.
 ```console
-set omniaResourceId="id-of-the-omnia-resource"
+set omniaResourceId="omnia-resource-id"
 set omniaClientId="your-client-id"
 set omniaClientSecret="very-very-secret-shared-key"
 ```
 
-Import the SDK in your own scripts...
+Import the Omnia client in your own scripts...
 
 ```python
-import omnia_sdk
+from omnia_timeseries_sdk import OmniaClient
 ```
 
 ... and get to work. [Here](https://github.com/equinor/simpos/blob/master/omnia-timeseries-sdk-python/examples/introduction.ipynb) 
@@ -94,8 +94,8 @@ python setup.py develop
 You should now be able to import the package in the Python console,
 
 ```python
-import omnia_sdk
-help(omnia_sdk)
+import omnia_timeseries_sdk
+help(omnia_timeseries_sdk)
 ```
 
 ### Running the tests

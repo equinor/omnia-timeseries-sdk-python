@@ -17,7 +17,7 @@ version = "0.1.0"
 
 setup(
     # package data
-    name='omnia_sdk',
+    name='omnia_timeseries_sdk',
     version=version,
     packages=find_packages(exclude=("test",)),
     package_data={},
@@ -34,7 +34,7 @@ setup(
 
     # meta data
     author='Per Voie',
-    description='Fetch data from Omnia Timeseries API',
+    description='Python software developer kit for the Omnia Timeseries API.',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     license='MIT',
