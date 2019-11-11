@@ -11,10 +11,9 @@ import http.client
 import urllib.parse
 import urllib.error
 from .timeseries import TimeSeriesAPI
+from ._config import BASE_URL, IDP_BASE_URL, DEFAULT_TENANT
 
-BASE_URL = "api.gateway.equinor.com"
-IDP_BASE_URL = "login.microsoftonline.com"
-TENANT = os.getenv("EquinorAzureADTenantId", "3aa4a235-b6e2-48d5-9195-7fcf05b459b0")
+TENANT = os.getenv("EquinorAzureADTenantId", DEFAULT_TENANT)
 
 
 class OmniaClient(object):

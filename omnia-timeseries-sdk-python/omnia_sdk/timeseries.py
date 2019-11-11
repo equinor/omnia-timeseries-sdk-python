@@ -1,11 +1,10 @@
 """
 Timeseries API
 """
-import datetime
 import logging
+import datetime
 from .resources import DataPoint, DataPoints, TimeSeries, TimeSeriesList
-from ._config import _DATETIME_FORMAT
-from ._utils import to_snake_case
+from ._utils import to_snake_case, from_datetime_string, to_datetime_string
 
 
 class TimeSeriesAPI(object):
@@ -162,7 +161,7 @@ class TimeSeriesAPI(object):
         if start is None:
             start = (end - datetime.timedelta(days=1))
 
-        _ = dict(startTime=start.strftime(_DATETIME_FORMAT), endTime=end.strftime(_DATETIME_FORMAT), limit=limit,
+        _ = dict(startTime=to_datetime_string(start), endTime=to_datetime_string(end), limit=limit,
                  includeOutsidePoints=include_outside_points)
         parameters = {k: v for k, v in _.items() if v is not None}
         items = self._unpack_response(

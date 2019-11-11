@@ -6,8 +6,7 @@ import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List, Union
-from ._config import _DATETIME_FORMAT
-from ._utils import make_serializable
+from ._utils import make_serializable, from_datetime_string, to_datetime_string
 
 
 class OmniaResource(object):
@@ -133,8 +132,8 @@ class TimeSeries(OmniaResource):
         self.description = description
         self.step = step
         self.unit = unit
-        self.created_time = datetime.datetime.strptime(created_time, _DATETIME_FORMAT)
-        self.changed_time = datetime.datetime.strptime(changed_time, _DATETIME_FORMAT)
+        self.created_time = from_datetime_string(created_time)
+        self.changed_time = from_datetime_string(changed_time)
         self._omnia_client = omnia_client
 
     def count(self):
@@ -251,7 +250,7 @@ class DataPoint(OmniaResource):
 
     # TODO: Create aggregate properties (max, min, stdev, count etc), defined on init if any
     def __init__(self, time: str = None, value: Union[int, float] = None, status: int = None):
-        self.time = datetime.datetime.strptime(time, _DATETIME_FORMAT)
+        self.time = from_datetime_string(time)
         self.value = value
         self.status = status
 

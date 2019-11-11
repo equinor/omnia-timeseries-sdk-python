@@ -6,9 +6,9 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 import uuid
 import re
-from ._config import _DATETIME_FORMAT
+from ._config import DATETIME_FORMAT
 
-
+# compile regex for camel case to snake case
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 all_cap_re = re.compile('([a-z0-9])([A-Z])')
 
@@ -52,7 +52,7 @@ def make_serializable(d):
                 raise NotImplementedError(f"Unable to JSON serialize multidimensional ndarrays. Key = '{key}'.")
             v = list(v)
         elif isinstance(v, datetime):
-            v = v.strftime(_DATETIME_FORMAT)
+            v = v.strftime(DATETIME_FORMAT)
         elif isinstance(v, timedelta):
             v = v.total_seconds()
         elif type(v) in (dict, OrderedDict, defaultdict):
@@ -144,3 +144,56 @@ def to_camel_case(d):
 
             dd[k] = v
         return dd
+
+
+def to_datetime_string(d):
+    """
+    Convert date time object to formatted date time string.
+
+    Parameters
+    ----------
+    d : datetime
+        Date time object
+
+    Returns
+    -------
+    str
+        Formatted date time string.
+    """
+    assert isinstance(d, datetime)
+
+    return d.strftime(DATETIME_FORMAT)
+
+
+def from_datetime_string(s):
+    """
+    Convert formatted date time string to date time object.
+
+    Parameters
+    ----------
+    s : str
+        ISO RFC3339 formatted date time string
+
+    Returns
+    -------
+    datetime
+        Date time object.
+
+    Notes
+    -----
+    Examples of  ISO RFC 3339 formatted date time strings
+        2008-09-03T20:56:35.450686Z
+        2008-09-03T20:56:35.450686+00:00
+        2008-09-03T20:56:35.450686+05:00
+        2008-09-03T20:56:35.450686-10:30
+
+    """
+    # datetime.fromisoformat() does not support Z as short notation for Zulu-time aka. +00:00
+    s = s.replace("Z", "+00:00")
+
+    # datetime.fromisoformat() and .strptime() does only handle 0, 3 or 6 decimal places (microseconds) but I frequently
+    # encounter deviations like 7 decimals. Truncate datetime string to 26 characters (6 decimals).
+    dt, tz = s.split("+")
+    s = "+".join([dt[:26], tz])
+
+    return datetime.fromisoformat(s)
