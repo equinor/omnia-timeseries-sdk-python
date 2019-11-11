@@ -149,8 +149,6 @@ class TimeSeries(OmniaResource):
 
         Parameters
         ----------
-        id : str
-            Time series id
         start: str, optional
             Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
         end: str, optional
@@ -175,7 +173,7 @@ class TimeSeries(OmniaResource):
         return self._omnia_client.time_series.data(self.id, start=start, end=end, limit=limit,
                                                    include_outside_points=include_outside_points)
 
-    def first(self, after : str = None):
+    def first(self, after: str = None):
         """
         Retrieves the first data point of the time series.
 
@@ -207,18 +205,27 @@ class TimeSeries(OmniaResource):
         """
         return self._omnia_client.time_series.latest_data(self.id, before_time=before)
 
-    def plot(self, **kwargs):
+    def plot(self, start: str = None, end: str = None, limit=None, include_outside_points: bool = False, **kwargs):
         """
         Plot data points in a given time window.
 
         Parameters
         ----------
+        start: str, optional
+            Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
+        end: str, optional
+            End of data window, date-time in ISO format (RFC3339), defaults to now.
+        limit : int, optional
+            Limit of datapoints to retrieve from within the time window. Between 1-10 000. The default value is 1000.
+        include_outside_points: bool, optional
+            Determines whether or not the points immediately prior to and following the time window should be
+            included in result.
         kwargs
-            See `TimeSeries.data` for options.
+            See pandas.DataFrame.plot for options.
         """
         # TODO: Collect aggregated data (specify aggregates and granularity)
-        dps = self.data(**kwargs)
-        dps.plot()
+        dps = self.data(start=start, end=end, limit=limit, include_outside_points=include_outside_points)
+        dps.plot(**kwargs)
 
 
 class TimeSeriesList(OmniaResourceList):
@@ -234,14 +241,21 @@ class TimeSeriesList(OmniaResourceList):
         self.resources = timeseries
         self._omnia_client = omnia_client
 
-    def data(self, **kwargs):
+    def data(self, start: str = None, end: str = None, limit=None, include_outside_points: bool = False):
         """
         Retrieves datapoints in a given time window according to applied parameters.
 
         Parameters
         ----------
-        kwargs
-            See `TimeSeries.data` for options.
+        start: str, optional
+            Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
+        end: str, optional
+            End of data window, date-time in ISO format (RFC3339), defaults to now.
+        limit : int, optional
+            Limit of datapoints to retrieve from within the time window. Between 1-10 000. The default value is 1000.
+        include_outside_points: bool, optional
+            Determines whether or not the points immediately prior to and following the time window should be
+            included in result.
 
         Returns
         -------
@@ -249,20 +263,29 @@ class TimeSeriesList(OmniaResourceList):
             List of data points in time window for the various time series.
 
         """
-        dps = [ts.data(**kwargs) for ts in self]
+        dps = [ts.data(start=start, end=end, limit=limit, include_outside_points=include_outside_points) for ts in self]
         return DataPointsList(dps)
 
-    def plot(self, **kwargs):
+    def plot(self, start: str = None, end: str = None, limit=None, include_outside_points: bool = False, **kwargs):
         """
         Plot data points from various time series in a given time window.
 
         Parameters
         ----------
+        start: str, optional
+            Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
+        end: str, optional
+            End of data window, date-time in ISO format (RFC3339), defaults to now.
+        limit : int, optional
+            Limit of datapoints to retrieve from within the time window. Between 1-10 000. The default value is 1000.
+        include_outside_points: bool, optional
+            Determines whether or not the points immediately prior to and following the time window should be
+            included in result.
         kwargs
-            See `TimeSeries.data` for options.
+            See pandas.DataFrame.plot for options.
         """
-        dps = self.data(**kwargs)
-        dps.plot()
+        dps = self.data(start=start, end=end, limit=limit, include_outside_points=include_outside_points)
+        dps.plot(**kwargs)
 
 
 class DataPoint(OmniaResource):
@@ -364,9 +387,16 @@ class DataPoints(OmniaResourceList):
         }
         return dumped
 
-    def plot(self):
-        """Plot data points."""
-        self.to_pandas().plot()
+    def plot(self, **kwargs):
+        """
+        Plot data points.
+
+        Parameters
+        ----------
+        kwargs
+            See pandas.DataFrame.plot for options.
+        """
+        self.to_pandas().plot(**kwargs)
         plt.show()
 
     def to_pandas(self, column_name: str = "name"):
@@ -410,9 +440,16 @@ class DataPointsList(OmniaResourceList):
     def __init__(self, dps: List[DataPoints]):
         self.resources = dps
 
-    def plot(self):
-        """Plot data points."""
-        self.to_pandas().plot()
+    def plot(self, **kwargs):
+        """
+        Plot data points.
+
+        Parameters
+        ----------
+        kwargs
+            See pandas.DataFrame.plot for options
+        """
+        self.to_pandas().plot(**kwargs)
         plt.show()
 
     def to_pandas(self, column_names: str = "name"):
