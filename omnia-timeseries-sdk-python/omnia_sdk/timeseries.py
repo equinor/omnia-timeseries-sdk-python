@@ -175,11 +175,61 @@ class TimeSeriesAPI(object):
         value = [dp.get("value") for dp in dps]
         return DataPoints(time, value)
 
-    def first_data(self, id: str):
-        raise NotImplementedError
+    def first_data(self, id: str, after_time: str = None):
+        """
+        Retrieves the first data point of a time series.
 
-    def latest_data(self, id: str):
-        raise NotImplementedError
+        Parameters
+        ----------
+        id : str
+            Id of time series from which to retrieve data.
+        after_time : str, optional
+            ISO formatted date-time string. Only look for data points after this time.
+
+        Returns
+        -------
+        DataPoint
+            The data point.
+        """
+        if after_time is not None:
+            parameters = dict(afterTime=after_time)
+        else:
+            parameters = dict()
+        items = self._unpack_response(
+            self._omnia_client._get(
+                self._resource_path, self._api_version, f"{id}/data/first", parameters=parameters
+            )
+        )
+        dp = items[0].get("datapoints")[0]
+        return DataPoint(**dp)
+
+    def latest_data(self, id: str, before_time : str = None):
+        """
+        Retrieves the last data point of a time series.
+
+        Parameters
+        ----------
+        id : str
+            Id of time series from which to retrieve data.
+        before_time : str, optional
+            ISO formatted date-time string. Only look for data points before this time.
+
+        Returns
+        -------
+        DataPoint
+            The data point.
+        """
+        if before_time is not None:
+            parameters = dict(beforeTime=before_time)
+        else:
+            parameters = dict()
+        items = self._unpack_response(
+            self._omnia_client._get(
+                self._resource_path, self._api_version, f"{id}/data/latest", parameters=parameters
+            )
+        )
+        dp = items[0].get("datapoints")[0]
+        return DataPoint(**dp)
 
     def count_data(self, id: str):
         raise NotImplementedError

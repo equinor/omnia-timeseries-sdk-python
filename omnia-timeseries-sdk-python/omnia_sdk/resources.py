@@ -173,13 +173,37 @@ class TimeSeries(OmniaResource):
         return self._omnia_client.time_series.data(self.id, start=start, end=end, limit=limit,
                                                    include_outside_points=include_outside_points)
 
-    def latest(self):
-        """DataPoint: Latest data point in time series."""
-        raise NotImplementedError
+    def first(self, after : str = None):
+        """
+        Retrieves the first data point of the time series.
 
-    def first(self):
-        """DataPoint: First data point in time series."""
-        raise NotImplementedError
+        Parameters
+        ----------
+        after : str, optional
+            ISO formatted date-time string. Only look for data points after this time.
+
+        Returns
+        -------
+        DataPoint
+            The data point.
+        """
+        return self._omnia_client.time_series.first_data(self.id, after_time=after)
+
+    def latest(self, before: str = None):
+        """
+        Retrieves the last data point of the time series.
+
+        Parameters
+        ----------
+        before : str, optional
+            ISO formatted date-time string. Only look for data points before this time.
+
+        Returns
+        -------
+        DataPoint
+            The data point.
+        """
+        return self._omnia_client.time_series.latest_data(self.id, before_time=before)
 
     def plot(self, **kwargs):
         """
