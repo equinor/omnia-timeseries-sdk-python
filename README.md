@@ -7,7 +7,7 @@ Python software developer kit for the Omnia Timeseries API.
 ### About
 
 This is the Python SDK for developers and data scientists working with Omnia Timeseries. The package integrates with 
-pandas to help you work easily and efficiently with the data.     
+pandas to help you work easily and efficiently with the data.
 
 ### Getting started
 
