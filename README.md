@@ -36,19 +36,19 @@ Import the Omnia client in your own scripts...
 from omnia_timeseries_sdk import OmniaClient
 ```
 
-... and get to work. [Here](https://github.com/equinor/simpos/blob/master/omnia-timeseries-sdk-python/examples/introduction.ipynb) 
+... and get to work. [Here](https://github.com/equinor/omnia-timeseries-sdk-python/examples/introduction.ipynb) 
 is an introduction. 
 
 Take a look at the resources listed below to learn more.
 
 ### Resources
 
-* [**Source**](https://github.com/equinor/simpos/omnia-timeseries-sdk-python)
-* [**Issues**](https://github.com/equinor/simpos/issues)
-* [**Changelog**](https://github.com/equinor/simpos/releases)
-* [**Documentation**](https://github.com/equinor/simpos/omnia-timeseries-sdk-python/blob/master/README.md)
+* [**Source**](https://github.com/equinor/omnia-timeseries-sdk-python)
+* [**Issues**](https://github.com/equinor/omnia-timeseries-sdk-python/issues)
+* [**Changelog**](https://github.com/equinor/omnia-timeseries-sdk-python/releases)
+* [**Documentation**](https://github.com/equinor/omnia-timeseries-sdk-python/blob/master/README.md)
 * [**Download**]()
-* [**Examples**](https://github.com/equinor/simpos/tree/master/omnia-timeseries-sdk-python/examples)
+* [**Examples**](https://github.com/equinor/omnia-timeseries-sdk-python/examples)
 
 ## Contribute
 
