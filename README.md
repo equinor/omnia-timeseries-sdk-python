@@ -65,8 +65,6 @@ At the desired location, run:
 
 ```git clone https://github.com/equinor/omnia-timeseries-sdk-python.git```
 
-Navigate to the 'omnia-timeseries-sdk-python' directory.
-
 ### Installing
 
 To get the development environment running:
