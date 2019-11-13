@@ -2,7 +2,8 @@
 """
 Set new version tag, using git command line interface.
 
-Git command 'git describe --tag' is used to get the current version (before setting new). The tags are like '4.1.0' or '4.1.0-1-g82869e0'.
+Git command 'git describe --tag' is used to get the current version (before setting new). The tags are like '4.1.0' or
+'4.1.0-1-g82869e0'.
 """
 import argparse
 import os
