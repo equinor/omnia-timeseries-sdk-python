@@ -1,5 +1,5 @@
 """
-Omnia Python SDK
+Python SDK for Omnia Timeseries API
 """
 from pkg_resources import get_distribution, DistributionNotFound
 from .client import OmniaClient
