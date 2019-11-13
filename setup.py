@@ -11,26 +11,19 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-# version number
-version = "0.1.0"
-
-
 setup(
     # package data
     name='omnia_timeseries_sdk',
-    version=version,
-    packages=find_packages(exclude=("test",)),
+    use_scm_version=True,
+    packages=find_packages(exclude=('test',)),
     package_data={},
     python_requires='~=3.7',
+    setup_requires=['setuptools_scm'],
     install_requires=[
         'matplotlib>=3,<4',
         'adal>=1,<2',
         'pandas>=0.25.3,<1',
     ],
-    entry_points={
-        'console_scripts': [],
-        'gui_scripts': []
-    },
     zip_safe=True,
 
     # meta data
@@ -39,7 +32,7 @@ setup(
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     license='MIT',
-    url='https://github.com/equinor/simpos',
+    url='https://github.com/equinor/omnia-timeseries-sdk-python',
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "License :: Other/Proprietary License",
