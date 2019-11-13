@@ -15,7 +15,7 @@ setup(
     # package data
     name='omnia_timeseries_sdk',
     use_scm_version=True,
-    packages=find_packages(exclude=('test',)),
+    packages=find_packages(exclude=('tests',)),
     package_data={},
     python_requires='~=3.7',
     setup_requires=['setuptools_scm'],
