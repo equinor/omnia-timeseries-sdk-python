@@ -23,8 +23,9 @@ setup(
     package_data={},
     python_requires='~=3.7',
     install_requires=[
-        'numpy>=1,<2',
+        'matplotlib>=3,<4',
         'adal>=1,<2',
+        'pandas>=0.25.3,<1',
     ],
     entry_points={
         'console_scripts': [],
