@@ -122,14 +122,7 @@ def main():
 
     parser.add_argument("-m", "--message", default="", help="Commit message to include. Default is empty string")
 
-    # parser.add_argument("--test", action="store_true",
-    #                     help="Do not set tag, only print what tag would have been set.")
-
     args = parser.parse_args()
-
-    # for debug and verification
-    # print(f"get_version_setuptools() : {get_version_setuptools()}")
-    # print(f"get_version_git()  : {get_version_git(return_dev=True)}")
 
     # extract current version tag
     major, minor, micro, dev = get_version_git(return_dev=True)
