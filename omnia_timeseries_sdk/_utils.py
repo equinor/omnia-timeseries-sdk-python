@@ -52,7 +52,7 @@ def make_serializable(d):
                 raise NotImplementedError(f"Unable to JSON serialize multidimensional ndarrays. Key = '{key}'.")
             v = list(v)
         elif isinstance(v, datetime):
-            v = v.strftime(DATETIME_FORMAT)
+            v = v.isoformat()
         elif isinstance(v, timedelta):
             v = v.total_seconds()
         elif type(v) in (dict, OrderedDict, defaultdict):
@@ -146,7 +146,7 @@ def to_camel_case(d):
         return dd
 
 
-def to_datetime_string(d):
+def to_omnia_datetime_string(d):
     """
     Convert date time object to formatted date time string.
 

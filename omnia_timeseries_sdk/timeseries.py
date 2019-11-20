@@ -4,7 +4,7 @@ Timeseries API
 import logging
 import datetime
 from .resources import DataPoint, DataPoints, TimeSeries, TimeSeriesList
-from ._utils import to_snake_case, to_datetime_string
+from ._utils import to_snake_case, to_omnia_datetime_string
 
 
 class TimeSeriesAPI(object):
@@ -151,15 +151,11 @@ class TimeSeriesAPI(object):
         DataPoints
             Time series data points in time window.
 
-        Notes
-        -----
-        ISO date-time format is like "2019-11-07T11:13:21Z".
-
         """
         if end is None:
-            end = to_datetime_string(datetime.datetime.utcnow())
+            end = datetime.datetime.utcnow().isoformat()
         if start is None:
-            start = to_datetime_string(datetime.datetime.utcnow() - datetime.timedelta(days=1))
+            start = (datetime.datetime.utcnow() - datetime.timedelta(days=1)).isoformat()
 
         _ = dict(startTime=start, endTime=end, limit=limit,
                  includeOutsidePoints=include_outside_points)
@@ -193,6 +189,7 @@ class TimeSeriesAPI(object):
         -------
         DataPoint
             The data point.
+
         """
         if after_time is not None:
             parameters = dict(afterTime=after_time)

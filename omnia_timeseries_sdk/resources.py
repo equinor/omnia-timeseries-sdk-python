@@ -5,7 +5,7 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List, Union
-from ._utils import make_serializable, from_datetime_string, to_datetime_string
+from ._utils import make_serializable, from_datetime_string
 
 
 class OmniaResource(object):
