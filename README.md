@@ -47,7 +47,7 @@ Take a look at the resources listed below to learn more.
 * [**Issues**](https://github.com/equinor/omnia-timeseries-sdk-python/issues)
 * [**Changelog**](https://github.com/equinor/omnia-timeseries-sdk-python/releases)
 * [**Documentation**](https://github.com/equinor/omnia-timeseries-sdk-python/blob/master/README.md)
-* [**Download**]()
+* [**Download**](https://pypi.org/project/omnia-timeseries-sdk/)
 * [**Examples**](https://github.com/equinor/omnia-timeseries-sdk-python/blob/master/examples/)
 
 ## Contribute
