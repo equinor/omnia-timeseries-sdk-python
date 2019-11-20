@@ -1,5 +1,5 @@
 """
-Data moadels of basic OMNIA resources
+Data models of basic OMNIA resources
 """
 import json
 import pandas as pd
