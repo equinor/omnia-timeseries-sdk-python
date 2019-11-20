@@ -64,9 +64,7 @@ class OmniaResourceList(OmniaResource):
         for r in self.resources:
             yield r
 
-    @property
-    def count(self):
-        """int: Number of resources."""
+    def __len__(self):
         return len(self.resources)
 
     def dump(self, camel_case: bool = False):
