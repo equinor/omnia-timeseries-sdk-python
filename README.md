@@ -98,13 +98,11 @@ help(omnia_timeseries_sdk)
 
 ### Running the tests
 
-The automated tests are run using [Tox](https://tox.readthedocs.io/en/latest/).
+We apply the [unittest](https://docs.python.org/3/library/unittest.html#module-unittest) framework.
 
 ```console
-tox
+python -m unittest discover
 ```
-
-The test automation is configured in [tox.ini](tox.ini).
 
 ### Building the package
 
@@ -128,11 +126,11 @@ sphinx-build -b html docs\source docs\_build
 --->
 
 ### Deployment
-Wait for it...
-<!---
-Packaging, unit testing and deployment to [Packagr](https://app.packagr.app) is automated using
-[Travis-CI](https://travis-ci.com).
---->
+
+The package releases are deployed to [PyPi](https://pypi.org/project/omnia-timeseries-sdk/).
+
+We use GitHub Actions to automate the build and deployment (CI-CD).
+
 ### Versioning
 
 We apply the "major.minor.micro" versioning scheme defined in [PEP 440](https://www.python.org/dev/peps/pep-0440/).
