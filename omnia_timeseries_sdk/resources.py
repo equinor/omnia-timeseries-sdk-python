@@ -5,7 +5,7 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List, Union
-from ._utils import make_serializable, from_datetime_string
+from ._utils import make_serializable, from_datetime_string, to_camel_case
 
 
 class OmniaResource(object):
@@ -30,7 +30,11 @@ class OmniaResource(object):
         Dict[str, Any]
             A dictionary representation of the instance.
         """
-        return {key: value for key, value in self.__dict__.items() if value is not None and not key.startswith("_")}
+        d = {key: value for key, value in self.__dict__.items() if value is not None and not key.startswith("_")}
+        if camel_case:
+            d = {to_camel_case(key): value for key, value in d.items()}
+
+        return d
 
     def to_pandas(self, ignore: List[str] = None):
         """
