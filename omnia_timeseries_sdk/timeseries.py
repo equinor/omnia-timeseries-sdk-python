@@ -4,7 +4,6 @@ Timeseries API
 import logging
 import datetime
 from .resources import DataPoint, DataPoints, TimeSeries, TimeSeriesList
-from ._utils import to_snake_case, to_omnia_datetime_string
 
 
 class TimeSeriesAPI(object):
@@ -21,30 +20,6 @@ class TimeSeriesAPI(object):
 
     def __init__(self, omnia_client):
         self._omnia_client = omnia_client
-
-    @staticmethod
-    def _unpack_response(response):
-        """
-        Unpack request response.
-
-        Parameters
-        ----------
-        response : dict
-            Response from request.
-
-        Returns
-        -------
-        list
-            Resources that matched the query.
-
-        """
-        # TODO: Consider to move this to utilities if it the response structure is generic across endpoints
-        try:
-            items = response.get('data').get('items', list())
-        except AttributeError:
-            return list()
-        else:
-            return to_snake_case(items)
 
     def list(self, name: str = None, external_id: str = None, asset_id: str = None, limit: int = None, skip: int = None,
              continuation_token: str = None):
@@ -79,9 +54,7 @@ class TimeSeriesAPI(object):
         _ = dict(name=name, externalId=external_id, assetId=asset_id, limit=limit, skip=skip,
                  continuationToken=continuation_token)
         parameters = {k: v for k, v in _.items() if v is not None}
-        items = self._unpack_response(
-            self._omnia_client._get(self._resource_path, self._api_version, "", parameters=parameters)
-        )
+        items = self._omnia_client._get(self._resource_path, self._api_version, "", parameters=parameters)
         return TimeSeriesList([TimeSeries(**item, omnia_client=self._omnia_client) for item in items])
 
     def retrieve(self, id: str):
@@ -99,7 +72,7 @@ class TimeSeriesAPI(object):
             Time series instance.
 
         """
-        items = self._unpack_response(self._omnia_client._get(self._resource_path, self._api_version, id))
+        items = self._omnia_client._get(self._resource_path, self._api_version, id)
         if len(items) == 0:
             logging.info(f"Could not find time series with id={id}.")
         elif len(items) > 1:
@@ -160,11 +133,7 @@ class TimeSeriesAPI(object):
         _ = dict(startTime=start, endTime=end, limit=limit,
                  includeOutsidePoints=include_outside_points)
         parameters = {k: v for k, v in _.items() if v is not None}
-        items = self._unpack_response(
-            self._omnia_client._get(
-                self._resource_path, self._api_version, f"{id}/data", parameters=parameters
-            )
-        )
+        items = self._omnia_client._get(self._resource_path, self._api_version, f"{id}/data", parameters=parameters)
         ts = items[0]   # should be only 1 time series
         id = ts.get("id")
         name = ts.get("name")
@@ -195,11 +164,8 @@ class TimeSeriesAPI(object):
             parameters = dict(afterTime=after_time)
         else:
             parameters = dict()
-        items = self._unpack_response(
-            self._omnia_client._get(
-                self._resource_path, self._api_version, f"{id}/data/first", parameters=parameters
-            )
-        )
+        items = self._omnia_client._get(self._resource_path, self._api_version, f"{id}/data/first",
+                                        parameters=parameters)
         ts = items[0]  # should be only 1 time series
         id = ts.get("id")
         name = ts.get("name")
@@ -227,11 +193,8 @@ class TimeSeriesAPI(object):
             parameters = dict(beforeTime=before_time)
         else:
             parameters = dict()
-        items = self._unpack_response(
-            self._omnia_client._get(
-                self._resource_path, self._api_version, f"{id}/data/latest", parameters=parameters
-            )
-        )
+        items = self._omnia_client._get(self._resource_path, self._api_version, f"{id}/data/latest",
+                                        parameters=parameters)
         ts = items[0]  # should be only 1 time series
         id = ts.get("id")
         name = ts.get("name")

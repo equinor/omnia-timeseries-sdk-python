@@ -12,6 +12,7 @@ import urllib.parse
 import urllib.error
 from .timeseries import TimeSeriesAPI
 from ._config import BASE_URL, IDP_BASE_URL, DEFAULT_TENANT
+from ._utils import to_snake_case
 
 TENANT = os.getenv("EquinorAzureADTenantId", DEFAULT_TENANT)
 
@@ -142,13 +143,15 @@ class OmniaClient(object):
         # request new access token
         self._token_request()
 
-        url_path = "/" + "/".join([p for p in [resource, version, endpoint] if p.strip()])
+        url = "/" + "/".join([p for p in [resource, version, endpoint] if p.strip()])
         if parameters is not None and isinstance(parameters, dict):
             enc_parameters = urllib.parse.urlencode(parameters)
+            limit = parameters.get("limit")
         else:
             enc_parameters = ""
+            limit = None
 
-        full_path = f"{url_path}/?{enc_parameters}"
+        url_with_parameters = f"{url}/?{enc_parameters}"
         headers = dict(
             Authorization=f"Bearer {os.getenv('currentOmniaAccessToken', '')}",
             Connection="keep-alive",
@@ -157,7 +160,7 @@ class OmniaClient(object):
         if body is not None:
             headers["Content-Type"] = "application/json; charset=utf=8"
 
-        msg = f"{method.upper()} {full_path} {http.client.__doc__.split()[0]}"
+        msg = f"{method.upper()} {url_with_parameters} {http.client.__doc__.split()[0]}"
         for k, v in headers.items():
             msg += f"\n{k}: {v}"
 
@@ -168,19 +171,34 @@ class OmniaClient(object):
 
         try:
             connection = http.client.HTTPSConnection(self.base_url)
-            connection.request(method, full_path, body=json.dumps(body), headers=headers)
-        except Exception as e:
+        except Exception:
             logging.error("Request failed", exc_info=True)
-        else:
-            response = connection.getresponse()
-            data = json.loads(response.read())
-            connection.close()
-            if data.get('statusCode', 200) != 200:  # statusCode is not populated in all cases
-                logging.error(f"Request failed. [{data.get('statusCode')}] {data.get('message')}")
-                return
+            return
+
+        results = list()
+        query_url = url_with_parameters
+        while True:
+            connection.request(method, query_url, body=json.dumps(body), headers=headers)
+            r = connection.getresponse()
+            if not r.status == 200:
+                logging.error(f"Request failed. [{r.status}] {r.reason}")
+                break
             else:
-                logging.debug("Request successfully completed.")
-                return data
+                _ = json.loads(r.read())
+                continuation_token = _.get("continuationToken")
+                items = _.get("data").get("items")
+                results.extend(items)
+                if continuation_token is None:
+                    break
+                elif limit is not None and len(results) >= limit:
+                    results = results[:limit]   # probably overkill
+                    break
+                else:
+                    query_url = f"{url_with_parameters}&continuationToken={continuation_token}"
+                    logging.debug(f"\tFetching next page... {query_url}")
+
+        connection.close()
+        return to_snake_case(results)
 
     def _get(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
         """
