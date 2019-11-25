@@ -98,14 +98,10 @@ help(omnia_timeseries_sdk)
 
 ### Running the tests
 
-We apply the [unittest](https://docs.python.org/3/library/unittest.html#module-unittest) framework.
+We apply the [unittest](https://docs.python.org/3/library/unittest.html#module-unittest) and 
+[pyteset](https://docs.pytest.org/en/latest/contents.html) frameworks.
 
-```console
-python -m unittest discover
-```
-
-Check the test coverage by
-
+Run the tests and check test coverage by
 ```console
 pytest --cov=omnia_timeseries_sdk --cov-report term-missing tests/
 ```
