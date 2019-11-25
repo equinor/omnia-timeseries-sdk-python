@@ -52,6 +52,10 @@ class OmniaTimeSeriesAPITestCase(unittest.TestCase):
         self.assertLessEqual(dps.resources[-2].time, end)
         self.assertLessEqual(end, dps.resources[-1].time)
 
+    def test_list(self):
+        l = self.client.time_series.list(limit=9)
+        self.assertIsInstance(l, TimeSeriesList)
+
     def test_list_with_limit(self):
         l = self.client.time_series.list(limit=9)
         self.assertIsInstance(l, TimeSeriesList)
