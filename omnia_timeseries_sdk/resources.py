@@ -141,10 +141,6 @@ class TimeSeries(OmniaResource):
         self.changed_time = from_datetime_string(changed_time)
         self._omnia_client = omnia_client
 
-    def count(self):
-        """int: Number of datapoints in this time series."""
-        raise NotImplementedError
-
     def data(self, start: str = None, end: str = None, limit=None, include_outside_points: bool = False):
         """
         Retrieves datapoints in a given time window according to applied parameters.
