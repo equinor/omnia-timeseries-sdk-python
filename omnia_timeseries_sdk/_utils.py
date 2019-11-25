@@ -98,11 +98,8 @@ def to_snake_case(d):
             if isinstance(k, str):
                 k = snake(k)
 
-            elif isinstance(v, (list, dict)):
+            if isinstance(v, (list, dict)):
                 v = to_snake_case(v)
-
-            else:
-                pass
 
             dd[k] = v
         return dd
@@ -136,11 +133,8 @@ def to_camel_case(d):
             if isinstance(k, str):
                 k = camel(k)
 
-            elif isinstance(v, (list, dict)):
+            if isinstance(v, (list, dict)):
                 v = to_camel_case(v)
-
-            else:
-                pass
 
             dd[k] = v
         return dd
