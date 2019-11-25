@@ -30,3 +30,7 @@ jobs:
     - name: Test with unittest
       run: |
         python -m unittest discover
+    - name: Check test coverage with Pytest-cov
+      run: |
+        # List terminal lines with missing test
+        pytest --cov=omnia_timeseries_sdk --cov-report term-missing tests/
