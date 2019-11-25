@@ -104,6 +104,12 @@ We apply the [unittest](https://docs.python.org/3/library/unittest.html#module-u
 python -m unittest discover
 ```
 
+Check the test coverage by
+
+```console
+pytest --cov=omnia_timeseries_sdk --cov-report term-missing tests/
+```
+
 ### Building the package
 
 Build tarball and wheel distributions by:
@@ -127,7 +133,8 @@ sphinx-build -b html docs\source docs\_build
 
 ### Deployment
 
-The package releases are deployed to [PyPi](https://pypi.org/project/omnia-timeseries-sdk/).
+The package [releases](https://github.com/equinor/omnia-timeseries-sdk-python/releases) are deployed 
+to [PyPi](https://pypi.org/project/omnia-timeseries-sdk/).
 
 We use GitHub Actions to automate the build and deployment (CI-CD).
 
@@ -135,11 +142,9 @@ We use GitHub Actions to automate the build and deployment (CI-CD).
 
 We apply the "major.minor.micro" versioning scheme defined in [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-<!---
-We cut a new version by applying a Git tag like `3.0.1` at the desired commit and then
-[setuptools_scm](https://github.com/pypa/setuptools_scm/#setup-py-usage) takes care of the rest. For the versions
-available, see the [tags on this repository](https://github.com/equinor/simpos/tags).
---->
+We cut a new version by applying a Git tag like `0.1.0` at the desired commit and then
+[setuptools_scm](https://github.com/pypa/setuptools_scm/#setup-py-usage) takes care of the rest at build time.
+See the [tags on this repository](https://github.com/equinor/omnia-timeseries-sdk-python/tags).
 
 ## Authors
 
