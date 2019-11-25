@@ -193,7 +193,7 @@ class TimeSeries(OmniaResource):
 
     def latest(self, before: str = None):
         """
-        Retrieves the last data point of the time series.
+        Retrieves the latest data point of the time series.
 
         Parameters
         ----------
@@ -363,7 +363,7 @@ class DataPoints(OmniaResourceList):
         return self.resources[0]
 
     @property
-    def last(self):
+    def latest(self):
         """DataPoint: Data point with the latest time."""
         return self.resources[-1]
 

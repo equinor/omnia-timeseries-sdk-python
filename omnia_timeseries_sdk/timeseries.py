@@ -175,7 +175,7 @@ class TimeSeriesAPI(object):
 
     def latest_data(self, id: str, before_time : str = None):
         """
-        Retrieves the last data point of a time series.
+        Retrieves the latest data point of a time series.
 
         Parameters
         ----------
