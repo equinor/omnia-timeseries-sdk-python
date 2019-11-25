@@ -16,7 +16,7 @@ class TimeSeriesAPI(object):
         Omnia client
     """
     _resource_path = "plant/timeseries"
-    _api_version = "v1.3"
+    _api_version = "v1.5"
 
     def __init__(self, omnia_client):
         self._omnia_client = omnia_client
