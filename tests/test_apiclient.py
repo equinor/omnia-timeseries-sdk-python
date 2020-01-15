@@ -25,8 +25,7 @@ class OmniaTimeSeriesAPITestCase(unittest.TestCase):
         self.assertIsInstance(dps, DataPoints)
         self.assertIsInstance(dps.resources[0], DataPoint)
         self.assertIsInstance(dps.resources[-1], DataPoint)
-        self.assertLessEqual(datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=1), dps.resources[0].time)
-        self.assertLessEqual(dps.resources[-1].time, datetime.datetime.now(tz=datetime.timezone.utc))
+        self.assertLessEqual(dps.resources[-1].time - dps.resources[0].time, datetime.timedelta(days=1))
 
     def test_data_with_twin(self):
         end = datetime.datetime(2019, 11, 20, hour=12, minute=0, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
