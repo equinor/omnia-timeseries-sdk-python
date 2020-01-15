@@ -23,13 +23,6 @@ pip install omnia_timeseries_sdk
 pip install --upgrade omnia_timeseries_sdk
 ```
 
-To access Omnia you have to set the following environmental variables. The values are provided by the Omnia administrators.
-```console
-set omniaResourceId="omnia-resource-id"
-set omniaClientId="your-client-id"
-set omniaClientSecret="very-very-secret-shared-key"
-```
-
 Import the Omnia client in your own scripts...
 
 ```python
@@ -39,6 +32,17 @@ from omnia_timeseries_sdk import OmniaClient
 ... and get to work. [Here](https://github.com/equinor/omnia-timeseries-sdk-python/blob/master/examples/introduction.ipynb) 
 is an introduction. 
 
+### Authentication
+
+The SDK supports [authentication by user impersonation and using a shared secret](https://github.com/equinor/OmniaPlant/wiki/Authentication-&-Authorization#authenticating-by-user-impersonation-without-any-shared-secret-for-people-with-equinor-accounts)
+
+When accessing Omnia from a service with a shared client secret you must set the following environmental variables. The 
+values are provided by the Omnia administrators.
+```console
+set omniaResourceId="omnia-resource-id"
+set omniaClientId="your-client-id"
+set omniaClientSecret="very-very-secret-shared-key"
+```
 Take a look at the resources listed below to learn more.
 
 ### Resources
