@@ -30,10 +30,12 @@ class OmniaClient(object):
 
     Notes
     -----
-    Requires that the following environmental variables are set
+    These environmental variables must be set if authenticating by user impersonation
         omniaClientId - Client identifier
-        omniaClientSecret - Shared secret key
         omniaResourceId - Omnia resource identifier
+
+    Additionally you must set this environmental variable if authenticating with a shared secret (machine-to-machine)
+        omniaClientSecret - Shared secret key
 
     """
     def __init__(self, base_url: str = None, log_level: str = None):
@@ -48,25 +50,33 @@ class OmniaClient(object):
     @staticmethod
     def _token_request():
         """Requests access token."""
-        resource = os.getenv("omniaResourceId")
-        client_id = os.getenv("omniaClientId")
+        # Set resource id and client id. Default ids for authentication by user impersonation (without shared secret).
+        # service-to-service / machine-to-machine authentication using a shared secret requires generally different
+        # resource and client ids and a shared secret (client secret). See also
+        # https://github.com/equinor/OmniaPlant/wiki/Authentication-&-Authorization
+        resource_id = os.getenv("omniaResourceId", "141369bd-3dca-4b55-825b-56ad4a69b1fc")
+        client_id = os.getenv("omniaClientId", "67da184b-6bde-43fd-a155-30ed4ff162d2")
         client_secret = os.getenv("omniaClientSecret")
-        if not resource or not client_id or not client_secret:
-            logging.warning("Credentials are not provided.")
-            return
 
+        # check if current access token is still valid
         current_resource_id = os.getenv("currentOmniaResourceId")
         current_client_id = os.getenv("currentOmniaClientId")
         token_expires_on = os.getenv("omniaAccessTokenExpiry")
-        if (current_resource_id == resource and current_client_id == client_id and token_expires_on is not None
+        if (current_resource_id == resource_id and current_client_id == client_id and token_expires_on is not None
                 and datetime.datetime.now().timestamp() < float(token_expires_on) * 1000):
             logging.debug("Current access token is still valid.")
             return
 
-        context = adal.AuthenticationContext(f'https://{IDP_BASE_URL}/{TENANT}',
-                                             validate_authority=(TENANT != 'adfs'))
+        context = adal.AuthenticationContext(f'https://{IDP_BASE_URL}/{TENANT}')
         try:
-            data = context.acquire_token_with_client_credentials(resource, client_id, client_secret)
+            if client_secret is not None:
+                logging.info("Authenticating with shared client secret (service-to-service).")
+                data = context.acquire_token_with_client_credentials(resource_id, client_id, client_secret)
+            else:
+                logging.info("Authenticating by user impersonation without any shared secret.")
+                code = context.acquire_user_code(resource_id, client_id)
+                print(f"\nUSER INTERACTION REQUIRED\n{code['message']}\n")
+                data = context.acquire_token_with_device_code(resource_id, code, client_id)
         except adal.adal_error.AdalError as e:
             logging.error("Unable to acquire a valid access token.", exc_info=True)
             return
