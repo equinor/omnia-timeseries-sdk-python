@@ -114,7 +114,7 @@ class TimeSeriesAPI(object):
         end: str, optional
             End of data window, date-time in ISO format (RFC3339), defaults to now.
         limit : int, optional
-            Limit of datapoints to retrieve from within the time window. Between 1-10 000. The default value is 1000.
+            Limit of datapoints to retrieve from within the time window. Between 1-100 000. The default value is 1000.
         include_outside_points: bool, optional
             Determines whether or not the points immediately prior to and following the time window should be
             included in result.
