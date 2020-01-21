@@ -163,19 +163,16 @@ class OmniaClient(object):
             connection.request(method, query_url, body=json.dumps(body), headers=headers)
             r = connection.getresponse()
             response = json.loads(r.read())
-            msg = f"\tstatusCode={response.get('statusCode')}\n" \
-                  f"\tmessage={response.get('message')}\n" \
-                  f"\ttraceId={response.get('traceId')}"
+            msg = response.get("message") or ""
 
             if not r.status == 200:
-                logging.error(f"Request failed. [{r.status}] {r.reason}\n{msg}")
+                logging.error(f"Request failed. [{r.status}] {r.reason}. {msg}.")
                 break
             else:
+                logging.debug(f"Request succeded. [{r.status}] {r.reason}. {msg}.")
                 if response.get("data") is None:
-                    logging.info(msg)
                     return True
                 else:
-                    logging.debug(msg)
                     continuation_token = response.get("continuationToken")
                     items = response.get("data").get("items")
                     results.extend(items)
@@ -226,7 +223,7 @@ class OmniaClient(object):
             'https://{base_url}/{resource}/{version}?firstparameter=value&anotherparameter=value
 
         """
-        return self._do_request("DELETE", resource, endpoint, version, parameters=parameters, body=body)
+        return self._do_request("DELETE", resource, version, endpoint, parameters=parameters, body=body)
 
     def get(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
         """
