@@ -21,6 +21,41 @@ class TimeSeriesAPI(object):
     def __init__(self, omnia_client):
         self._omnia_client = omnia_client
 
+    def create(self, name: str, description: str = None, asset_id: str = None, unit: str = None,
+               external_id: str = None, step: bool = False):
+        """
+        Create a single timeseries object.
+
+        Parameters
+        ----------
+        name : str
+            Name of the timeseries.
+        description : str, optional
+            Description of the timeseries.
+        asset_id : str, optional
+            ID of the asset this timeseries belongs to.
+        unit : str, optional
+            The timeseries physical unit of measure.
+        external_id : str, optional
+            ID from another (external) system provided by client.
+        step : bool, optional
+            Is this a step time series.
+
+        Returns
+        -------
+        TimeSeries
+            Time series instance.
+
+        """
+        # only name is mandatory
+        body = dict(name=name, description=description, step=step, unit=unit, asset_id=asset_id,
+                    external_id=external_id)
+        items = self._omnia_client.post(self._resource_path, self._api_version, "", body=body)
+        return TimeSeries(**items[0], omnia_client=self._omnia_client)
+
+    def delete(self):
+        raise NotImplementedError
+
     def list(self, name: str = None, external_id: str = None, asset_id: str = None, limit: int = None, skip: int = None,
              continuation_token: str = None):
         """
