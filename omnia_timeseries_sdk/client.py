@@ -145,7 +145,7 @@ class OmniaClient(object):
 
         if body is not None:
             body = to_camel_case({k: v for k, v in body.items() if v is not None})
-            headers["Content-Type"] = "application/json; charset=utf=8"
+            headers["Content-Type"] = "application/json"
             msg += f"\nBody:\n{json.dumps(body, indent=2)}"
 
         logging.debug(msg)
