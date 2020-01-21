@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.error
 from .timeseries import TimeSeriesAPI
 from ._config import BASE_URL, IDP_BASE_URL, DEFAULT_TENANT
-from ._utils import to_snake_case
+from ._utils import to_snake_case, to_camel_case
 
 TENANT = os.getenv("EquinorAzureADTenantId", DEFAULT_TENANT)
 
@@ -125,6 +125,7 @@ class OmniaClient(object):
 
         url = "/" + "/".join([p for p in [resource, version, endpoint] if p.strip()])
         if parameters is not None and isinstance(parameters, dict):
+            parameters = to_camel_case({k: v for k, v in parameters.items() if v is not None})
             enc_parameters = urllib.parse.urlencode(parameters)
             limit = parameters.get("limit")
         else:
@@ -137,14 +138,14 @@ class OmniaClient(object):
             Connection="keep-alive",
             Host=BASE_URL,
         )
-        if body is not None:
-            headers["Content-Type"] = "application/json; charset=utf=8"
 
         msg = f"{method.upper()} {url_with_parameters} {http.client.__doc__.split()[0]}"
         for k, v in headers.items():
             msg += f"\n{k}: {v}"
 
         if body is not None:
+            body = to_camel_case({k: v for k, v in body.items() if v is not None})
+            headers["Content-Type"] = "application/json; charset=utf=8"
             msg += f"\nBody:\n{json.dumps(body, indent=2)}"
 
         logging.debug(msg)

@@ -51,10 +51,9 @@ class TimeSeriesAPI(object):
         The web API uses camelcase parameters.
 
         """
-        _ = dict(name=name, externalId=external_id, assetId=asset_id, limit=limit, skip=skip,
-                 continuationToken=continuation_token)
-        parameters = {k: v for k, v in _.items() if v is not None}
-        items = self._omnia_client._get(self._resource_path, self._api_version, "", parameters=parameters)
+        parameters = dict(name=name, external_id=external_id, asset_id=asset_id, limit=limit, skip=skip,
+                          continuation_token=continuation_token)
+        items = self._omnia_client.get(self._resource_path, self._api_version, "", parameters=parameters)
         return TimeSeriesList([TimeSeries(**item, omnia_client=self._omnia_client) for item in items])
 
     def retrieve(self, id: str):
@@ -72,7 +71,7 @@ class TimeSeriesAPI(object):
             Time series instance.
 
         """
-        items = self._omnia_client._get(self._resource_path, self._api_version, id)
+        items = self._omnia_client.get(self._resource_path, self._api_version, id)
         if len(items) == 0:
             logging.info(f"Could not find time series with id={id}.")
         elif len(items) > 1:
@@ -100,6 +99,21 @@ class TimeSeriesAPI(object):
         # TODO: Update when Timeseries API support retrieving multiple timeseries by id
         timeseries = [self.retrieve(id) for id in ids]
         return TimeSeriesList(timeseries, omnia_client=self._omnia_client)
+
+    def update(self):
+        raise NotImplementedError
+
+    def search(self):
+        raise NotImplementedError
+
+    def add_data(self, id: str):
+        raise NotImplementedError
+
+    def add_data_on_multiple(self, id: str):
+        raise NotImplementedError
+
+    def delete_data(self, id: str):
+        raise NotImplementedError
 
     def data(self, id: str, start: str = None, end: str = None, limit=None, include_outside_points: bool = False):
         """
@@ -130,10 +144,8 @@ class TimeSeriesAPI(object):
         if start is None:
             start = (datetime.datetime.utcnow() - datetime.timedelta(days=1)).isoformat()
 
-        _ = dict(startTime=start, endTime=end, limit=limit,
-                 includeOutsidePoints=include_outside_points)
-        parameters = {k: v for k, v in _.items() if v is not None}
-        items = self._omnia_client._get(self._resource_path, self._api_version, f"{id}/data", parameters=parameters)
+        parameters = dict(start_time=start, end_time=end, limit=limit, include_outside_points=include_outside_points)
+        items = self._omnia_client.get(self._resource_path, self._api_version, f"{id}/data", parameters=parameters)
         ts = items[0]   # should be only 1 time series
         id = ts.get("id")
         name = ts.get("name")
@@ -160,12 +172,9 @@ class TimeSeriesAPI(object):
             The data point.
 
         """
-        if after_time is not None:
-            parameters = dict(afterTime=after_time)
-        else:
-            parameters = dict()
-        items = self._omnia_client._get(self._resource_path, self._api_version, f"{id}/data/first",
-                                        parameters=parameters)
+        parameters = dict(after_time=after_time)
+        items = self._omnia_client.get(self._resource_path, self._api_version, f"{id}/data/first",
+                                       parameters=parameters)
         ts = items[0]  # should be only 1 time series
         id = ts.get("id")
         name = ts.get("name")
@@ -173,7 +182,7 @@ class TimeSeriesAPI(object):
         dp = ts.get("datapoints")[0]
         return DataPoint(id=id, name=name, unit=unit, **dp)
 
-    def latest_data(self, id: str, before_time : str = None):
+    def latest_data(self, id: str, before_time: str = None):
         """
         Retrieves the latest data point of a time series.
 
@@ -189,12 +198,9 @@ class TimeSeriesAPI(object):
         DataPoint
             The data point.
         """
-        if before_time is not None:
-            parameters = dict(beforeTime=before_time)
-        else:
-            parameters = dict()
-        items = self._omnia_client._get(self._resource_path, self._api_version, f"{id}/data/latest",
-                                        parameters=parameters)
+        parameters = dict(before_time=before_time)
+        items = self._omnia_client.get(self._resource_path, self._api_version, f"{id}/data/latest",
+                                       parameters=parameters)
         ts = items[0]  # should be only 1 time series
         id = ts.get("id")
         name = ts.get("name")
@@ -202,17 +208,6 @@ class TimeSeriesAPI(object):
         dp = ts.get("datapoints")[0]
         return DataPoint(id=id, name=name, unit=unit, **dp)
 
-    def count_data(self, id: str):
-        raise NotImplementedError
 
-    def create(self):
-        raise NotImplementedError
 
-    def delete(self):
-        raise NotImplementedError
 
-    def update(self):
-        raise NotImplementedError
-
-    def search(self):
-        raise NotImplementedError
