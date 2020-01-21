@@ -162,29 +162,38 @@ class OmniaClient(object):
         while True:
             connection.request(method, query_url, body=json.dumps(body), headers=headers)
             r = connection.getresponse()
+            response = json.loads(r.read())
+            msg = f"\tstatusCode={response.get('statusCode')}\n" \
+                  f"\tmessage={response.get('message')}\n" \
+                  f"\ttraceId={response.get('traceId')}"
+
             if not r.status == 200:
-                logging.error(f"Request failed. [{r.status}] {r.reason}")
+                logging.error(f"Request failed. [{r.status}] {r.reason}\n{msg}")
                 break
             else:
-                _ = json.loads(r.read())
-                continuation_token = _.get("continuationToken")
-                items = _.get("data").get("items")
-                results.extend(items)
-                if items[0].get("datapoints") is not None:
-                    # limit response size based on number of returned data points
-                    # TODO: Not robust because the web API return datapoints as
-                    #  {"data": {"items": [{"datapoints": [{"time": ..., "value": ..., "status: ...}]}, ]}} under items.
-                    #  Should rather return datapoints directly under "items" to be generic, like
-                    #  {"data": {"items": [{"time": ..., "value": ..., "status: ...}, {...}, {...}]}}
-                    n_items += len(items[0].get("datapoints"))
+                if response.get("data") is None:
+                    logging.info(msg)
+                    return True
                 else:
-                    n_items += len(items)
+                    logging.debug(msg)
+                    continuation_token = response.get("continuationToken")
+                    items = response.get("data").get("items")
+                    results.extend(items)
+                    if items[0].get("datapoints") is not None:
+                        # limit response size based on number of returned data points
+                        # TODO: Not robust because the web API return datapoints as
+                        #  {"data": {"items": [{"datapoints": [{"time": ..., "value": ..., "status: ...}]}, ]}} under items.
+                        #  Should rather return datapoints directly under "items" to be generic, like
+                        #  {"data": {"items": [{"time": ..., "value": ..., "status: ...}, {...}, {...}]}}
+                        n_items += len(items[0].get("datapoints"))
+                    else:
+                        n_items += len(items)
 
-                if continuation_token is None or (limit is not None and n_items >= limit):
-                    break
-                else:
-                    query_url = f"{url_with_parameters}&continuationToken={continuation_token}"
-                    logging.debug(f"\tFetching next page... {query_url}")
+                    if continuation_token is None or (limit is not None and n_items >= limit):
+                        break
+                    else:
+                        query_url = f"{url_with_parameters}&continuationToken={continuation_token}"
+                        logging.debug(f"\tFetching next page... {query_url}")
 
         connection.close()
         return to_snake_case(results)
