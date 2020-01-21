@@ -171,6 +171,26 @@ class TimeSeries(OmniaResource):
         return self._omnia_client.time_series.data(self.id, start=start, end=end, limit=limit,
                                                    include_outside_points=include_outside_points)
 
+    def delete(self):
+        """
+        Delete time series object.
+        """
+        self._omnia_client.time_series.delete(self.id)
+
+    def delete_data(self, start: str = None, end: str = None):
+        """
+        Delete datapoints in the given time window.
+
+        Parameters
+        ----------
+        start: str, optional
+            Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
+        end: str, optional
+            End of data window, date-time in ISO format (RFC3339), defaults to now.
+
+        """
+        raise NotImplementedError
+
     def first(self, after: str = None):
         """
         Retrieves the first data point of the time series.

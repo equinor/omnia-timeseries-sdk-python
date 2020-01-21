@@ -52,8 +52,17 @@ class TimeSeriesAPI(object):
         items = self._omnia_client.post(self._resource_path, self._api_version, "", body=body)
         return TimeSeries(**items[0], omnia_client=self._omnia_client)
 
-    def delete(self):
-        raise NotImplementedError
+    def delete(self, id: str):
+        """
+        Delete time series with given id.
+
+        Parameters
+        ----------
+        id : str
+            Time series id.
+
+        """
+        return self._omnia_client.delete(self._resource_path, self._api_version, id)
 
     def list(self, name: str = None, external_id: str = None, asset_id: str = None, limit: int = None, skip: int = None,
              continuation_token: str = None):
