@@ -126,7 +126,7 @@ class OmniaClient(object):
 
         Parameters
         ----------
-        method : {'GET', 'POST', 'PUT', 'DELETE'}
+        method : {'GET', 'POST', 'PUT', 'PATCH', 'DELETE'}
             Request method.
         resource : str
             API resource e.g. 'plant/timeseries'
@@ -247,6 +247,36 @@ class OmniaClient(object):
 
         """
         return self._do_request("GET", resource, version, endpoint, parameters=parameters, body=body)
+
+    def _patch(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
+        """
+        POST request
+
+        Parameters
+        ----------
+        resource : str
+            API resource e.g. 'plant/timeseries'
+        version : str
+            API version e.g. 'v1.3'
+        endpoint : str
+            API resource endpoint e.g.
+        parameters : dict, optional
+            Request parameters.
+        body : dict, optional
+            Request body.
+
+        Returns
+        -------
+        dict
+            Request response
+
+        Notes
+        -----
+        The full request url is like
+            'https://{base_url}/{resource}/{version}?firstparameter=value&anotherparameter=value
+
+        """
+        return self._do_request("PATCH", resource, version, endpoint, parameters=parameters, body=body)
 
     def _post(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
         """
