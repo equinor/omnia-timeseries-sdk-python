@@ -89,36 +89,6 @@ class OmniaClient(object):
             os.environ["omniaAccessTokenExpiryDate"] = data.get("expiresOn")
             logging.debug("Acquired valid access token.")
 
-    def _delete(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
-        """
-        DELETE request
-
-        Parameters
-        ----------
-        resource : str
-            API resource e.g. 'plant/timeseries'
-        endpoint : str
-            API resource endpoint e.g.
-        version : str
-            API version e.g. 'v1.3'
-        parameters : dict, optional
-            Request parameters.
-        body : dict, optional
-            Request body.
-
-        Returns
-        -------
-        dict
-            Request response
-
-        Notes
-        -----
-        The full request url is like
-            'https://{base_url}/{resource}/{version}?firstparameter=value&anotherparameter=value
-
-        """
-        return self._do_request("DELETE", resource, endpoint, version, parameters=parameters, body=body)
-
     def _do_request(self, method: str, resource: str, version: str, endpoint: str, parameters: dict = None,
                     body: dict = None):
         """
@@ -218,7 +188,37 @@ class OmniaClient(object):
         connection.close()
         return to_snake_case(results)
 
-    def _get(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
+    def delete(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
+        """
+        DELETE request
+
+        Parameters
+        ----------
+        resource : str
+            API resource e.g. 'plant/timeseries'
+        endpoint : str
+            API resource endpoint e.g.
+        version : str
+            API version e.g. 'v1.3'
+        parameters : dict, optional
+            Request parameters.
+        body : dict, optional
+            Request body.
+
+        Returns
+        -------
+        dict
+            Request response
+
+        Notes
+        -----
+        The full request url is like
+            'https://{base_url}/{resource}/{version}?firstparameter=value&anotherparameter=value
+
+        """
+        return self._do_request("DELETE", resource, endpoint, version, parameters=parameters, body=body)
+
+    def get(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
         """
         GET request
 
@@ -248,7 +248,7 @@ class OmniaClient(object):
         """
         return self._do_request("GET", resource, version, endpoint, parameters=parameters, body=body)
 
-    def _patch(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
+    def patch(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
         """
         POST request
 
@@ -278,7 +278,7 @@ class OmniaClient(object):
         """
         return self._do_request("PATCH", resource, version, endpoint, parameters=parameters, body=body)
 
-    def _post(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
+    def post(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
         """
         POST request
 
@@ -308,7 +308,7 @@ class OmniaClient(object):
         """
         return self._do_request("POST", resource, version, endpoint, parameters=parameters, body=body)
 
-    def _put(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
+    def put(self, resource: str, version: str, endpoint: str, parameters: dict = None, body: dict = None):
         """
         PUT request
 
