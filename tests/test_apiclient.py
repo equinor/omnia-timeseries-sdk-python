@@ -2,9 +2,47 @@ import unittest
 import datetime
 from omnia_timeseries_sdk import OmniaClient
 from omnia_timeseries_sdk.resources import TimeSeries, TimeSeriesList, DataPoint, DataPoints
+from omnia_timeseries_sdk.exceptions import OmniaTimeSeriesAPIError
 
 
-class OmniaTimeSeriesAPITestCase(unittest.TestCase):
+class CreateNewTimeSeriesTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.client = OmniaClient()
+        self.name = "PYSDK_TEST_SERIES"
+        self.description = "Time series instance created for testing API."
+        self.unit = "horse"
+        self.asset_id = None
+        self.external_id = None
+        self.step = False
+        self.ts = self.client.time_series.create(self.name, description=self.description, unit=self.unit,
+                                                 asset_id=self.asset_id, external_id=self.external_id, step=self.step)
+
+    def test_instance(self):
+        self.assertIsInstance(self.ts, TimeSeries)
+        self.assertEqual(self.name, self.ts.name)
+        self.assertEqual(self.description, self.ts.description)
+        self.assertEqual(self.unit, self.ts.unit)
+        self.assertIsNone(self.ts.asset_id)
+        self.assertIsNone(self.ts.external_id)
+        self.assertFalse(self.ts.step)
+
+        # is it retrievable
+        _ = self.client.time_series.retrieve(self.ts.id)
+        self.assertIsInstance(_, TimeSeries)
+        self.assertEqual(self.ts.id, _.id)
+        self.assertEqual(self.ts.name, _.name)
+
+    def tearDown(self) -> None:
+        r = self.ts.delete()
+        try:
+            _ = self.client.time_series.retrieve(self.ts.id)
+        except OmniaTimeSeriesAPIError as e:
+            self.assertEqual(404, int(e.status))
+        else:
+            self.fail(f"Time series '{self.ts.id}' is still retrievable.")
+
+
+class RetrieveExistingTimeSeriesAndDataPointsTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.client = OmniaClient()
 
