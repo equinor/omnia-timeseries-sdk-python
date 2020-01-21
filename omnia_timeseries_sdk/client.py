@@ -13,6 +13,7 @@ import urllib.error
 from .timeseries import TimeSeriesAPI
 from ._config import BASE_URL, IDP_BASE_URL, DEFAULT_TENANT
 from ._utils import to_snake_case, to_camel_case
+from .exceptions import OmniaAuthenticationError, OmniaClientConnectionError, OmniaTimeSeriesAPIError
 
 TENANT = os.getenv("EquinorAzureADTenantId", DEFAULT_TENANT)
 
@@ -79,7 +80,7 @@ class OmniaClient(object):
                 data = context.acquire_token_with_device_code(resource_id, code, client_id)
         except adal.adal_error.AdalError as e:
             logging.error("Unable to acquire a valid access token.", exc_info=True)
-            return
+            raise OmniaAuthenticationError()
         else:
             os.environ["currentOmniaAccessToken"] = data.get("accessToken")
             os.environ["omniaAccessTokenExpiry"] = str(
@@ -154,7 +155,7 @@ class OmniaClient(object):
             connection = http.client.HTTPSConnection(self.base_url)
         except Exception:
             logging.error("Request failed", exc_info=True)
-            return
+            raise OmniaClientConnectionError()
 
         results = list()
         query_url = url_with_parameters
@@ -167,7 +168,7 @@ class OmniaClient(object):
 
             if not r.status == 200:
                 logging.error(f"Request failed. [{r.status}] {r.reason}. {msg}.")
-                break
+                raise OmniaTimeSeriesAPIError(r.status, r.reason, msg)
             else:
                 logging.debug(f"Request succeded. [{r.status}] {r.reason}. {msg}.")
                 if response.get("data") is None:

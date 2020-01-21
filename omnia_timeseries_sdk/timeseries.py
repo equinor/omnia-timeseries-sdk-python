@@ -1,7 +1,6 @@
 """
 Timeseries API
 """
-import logging
 import datetime
 from .resources import DataPoint, DataPoints, TimeSeries, TimeSeriesList
 
@@ -107,13 +106,6 @@ class TimeSeriesAPI(object):
 
         """
         items = self._omnia_client.get(self._resource_path, self._api_version, id)
-        if len(items) == 0:
-            logging.info(f"Could not find time series with id={id}.")
-        elif len(items) > 1:
-            logging.warning(f"Found {len(items)} with id={id}. Using the first one.")
-        else:
-            pass
-
         return TimeSeries(**items[0], omnia_client=self._omnia_client)
 
     def retrieve_multiple(self, ids: list):
