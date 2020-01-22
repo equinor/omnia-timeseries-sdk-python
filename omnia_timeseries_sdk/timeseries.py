@@ -2,7 +2,9 @@
 Timeseries API
 """
 import datetime
+from typing import List, Union
 from .resources import DataPoint, DataPoints, TimeSeries, TimeSeriesList
+from ._utils import to_omnia_datetime_string
 
 
 class TimeSeriesAPI(object):
@@ -142,16 +144,55 @@ class TimeSeriesAPI(object):
     def search(self):
         raise NotImplementedError
 
-    def add_data(self, id: str):
-        raise NotImplementedError
+    def add_data(self, id: str, time: list, values: list, status: list, asynch: bool = False):
+        """
+        Add or update a timeseries' datapoints.
+
+        Parameters
+        ----------
+        id : str
+            Id of timeseries for which to add or update datapoints.
+        time : List[datetime.datetime]
+            Datetime of each datapoint.
+        values : List[Union[float, int, str]]
+            Value of each datapoint.
+        status : List[int]
+            Status of each datapoint.
+        asynch : bool, optional
+            Determines whether the datapoints should be added or updated asynchronoulsy. If you set this to true only
+            permission check will be performed and 202 Accepted will be returned. If you set this to false or do not
+            supply it, the request will not be returned until the changes are committed.
+
+        """
+        if not len(time) == len(values) == len(status):
+            raise ValueError("The number of items in `time`, `value` and `status` must be equal.")
+
+        parameters = {"async": asynch}
+        body = dict(datapoints=[dict(time=to_omnia_datetime_string(t), value=v, status=s) for t, v, s in zip(time, values, status)])
+        _ = self._omnia_client.post(self._resource_path, self._api_version, f"{id}/data", parameters=parameters,
+                                    body=body)
 
     def add_data_on_multiple(self, id: str):
         raise NotImplementedError
 
-    def delete_data(self, id: str):
-        raise NotImplementedError
+    def delete_data(self, id: str, start_time: str = None, end_time: str = None):
+        """
+        Delete datapoints from a timeseries.
 
-    def data(self, id: str, start: str = None, end: str = None, limit=None, include_outside_points: bool = False):
+        Parameters
+        ----------
+        id : str
+            Id of timeseries for which to delete data.
+        start_time : str, optional
+            Format - date-time (as date-time in RFC3339). Inclusive start bound of deletion window.
+        end_time : str, optional
+            Format - date-time (as date-time in RFC3339). Non-inclusive end bound of deletion window.
+
+        """
+        parameters = dict(start_time=start_time, end_time=end_time)
+        _ = self._omnia_client.delete(self._resource_path, self._api_version, f"{id}/data", parameters=parameters)
+
+    def data(self, id: str, start_time: str = None, end_time: str = None, limit=None, include_outside_points: bool = False):
         """
         Retrieves datapoints in a given time window according to applied parameters.
 
@@ -159,9 +200,9 @@ class TimeSeriesAPI(object):
         ----------
         id : str
             Time series id
-        start: str, optional
+        start_time: str, optional
             Start of data window, date-time in ISO format (RFC3339), defaults to 1 day ago.
-        end: str, optional
+        end_time: str, optional
             End of data window, date-time in ISO format (RFC3339), defaults to now.
         limit : int, optional
             Limit of datapoints to retrieve from within the time window. Between 1-100 000. The default value is 1000.
@@ -175,12 +216,12 @@ class TimeSeriesAPI(object):
             Time series data points in time window.
 
         """
-        if end is None:
-            end = datetime.datetime.utcnow().isoformat()
-        if start is None:
-            start = (datetime.datetime.utcnow() - datetime.timedelta(days=1)).isoformat()
+        if end_time is None:
+            end_time = datetime.datetime.utcnow().isoformat()
+        if start_time is None:
+            start_time = (datetime.datetime.utcnow() - datetime.timedelta(days=1)).isoformat()
 
-        parameters = dict(start_time=start, end_time=end, limit=limit, include_outside_points=include_outside_points)
+        parameters = dict(start_time=start_time, end_time=end_time, limit=limit, include_outside_points=include_outside_points)
         items = self._omnia_client.get(self._resource_path, self._api_version, f"{id}/data", parameters=parameters)
         ts = items[0]   # should be only 1 time series
         id = ts.get("id")
