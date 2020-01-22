@@ -172,10 +172,14 @@ class OmniaClient(object):
             else:
                 logging.debug(f"Request succeded. [{r.status}] {r.reason}. {msg}.")
                 if response.get("data") is None:
-                    return True
+                    return
                 else:
                     continuation_token = response.get("continuationToken")
                     items = response.get("data").get("items")
+
+                    if items is None or len(items) == 0:
+                        break
+
                     results.extend(items)
                     if items[0].get("datapoints") is not None:
                         # limit response size based on number of returned data points
