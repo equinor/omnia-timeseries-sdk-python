@@ -230,7 +230,7 @@ class TimeSeriesAPI(object):
         dps = ts.get("datapoints")
         time = [dp.get("time") for dp in dps]
         value = [dp.get("value") for dp in dps]
-        return DataPoints(id=id, name=name, unit=unit, time=time, value=value)
+        return DataPoints(id=id, name=name, unit=unit, time=time, value=value, omnia_client=self._omnia_client)
 
     def first_data(self, id: str, after_time: str = None):
         """
@@ -257,7 +257,7 @@ class TimeSeriesAPI(object):
         name = ts.get("name")
         unit = ts.get("unit")
         dp = ts.get("datapoints")[0]
-        return DataPoint(id=id, name=name, unit=unit, **dp)
+        return DataPoint(id=id, name=name, unit=unit, **dp, omnia_client=self._omnia_client)
 
     def latest_data(self, id: str, before_time: str = None):
         """
@@ -283,7 +283,7 @@ class TimeSeriesAPI(object):
         name = ts.get("name")
         unit = ts.get("unit")
         dp = ts.get("datapoints")[0]
-        return DataPoint(id=id, name=name, unit=unit, **dp)
+        return DataPoint(id=id, name=name, unit=unit, **dp, omnia_client=self._omnia_client)
 
 
 
