@@ -5,7 +5,56 @@ from omnia_timeseries_sdk.resources import TimeSeries, TimeSeriesList, DataPoint
 from omnia_timeseries_sdk.exceptions import OmniaTimeSeriesAPIError
 
 
-class CreateNewTimeSeriesTestCase(unittest.TestCase):
+class CreateAndDeleteDataPointsTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        self.client = OmniaClient()
+        self.name = "PYSDK_TEST_SERIES"
+        self.description = "Time series instance created for testing API."
+        self.unit = "horse"
+        self.asset_id = None
+        self.external_id = None
+        self.step = False
+        self.ts = self.client.time_series.create(self.name, description=self.description, unit=self.unit,
+                                                 asset_id=self.asset_id, external_id=self.external_id, step=self.step)
+        self.t0 = datetime.datetime(2020, 1, 1, hour=12, minute=0, second=0)
+        self.dt = datetime.timedelta(days=1)
+        self.ts.add_data([self.t0, self.t0 + self.dt], [100, 200], [0, 0])
+
+    def test_instance(self):
+        dps = self.ts.data()
+        self.assertIsInstance(dps, DataPoints)
+        self.assertEqual(2, len(dps))
+        self.assertEqual(self.ts.id, dps.id)
+        self.assertEqual([100, 200], dps.value)
+        self.assertEqual([0, 0], dps.status)
+
+        dps = self.ts.data(start_time=(self.t0 + self.dt / 2))
+        self.assertIsInstance(dps, DataPoints)
+        self.assertEqual(1, len(dps))
+        self.assertEqual(self.ts.id, dps.id)
+        self.assertEqual([200], dps.value)
+        self.assertEqual([0], dps.status)
+
+    def tearDown(self) -> None:
+        try:
+            _ = self.ts.delete_data()
+        except OmniaTimeSeriesAPIError as e:
+            raise e
+        else:
+            dps = self.ts.data()
+            if not len(dps) == 0:
+                self.fail(f"The data points on time series '{self.ts.id}' still exist.")
+        finally:
+            _ = self.ts.delete()
+            try:
+                _ = self.client.time_series.retrieve(self.ts.id)
+            except OmniaTimeSeriesAPIError as e:
+                self.assertEqual(404, int(e.status))
+            else:
+                self.fail(f"Time series '{self.ts.id}' still exists.")
+
+
+class CreateAndDeleteTimeSeriesTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.client = OmniaClient()
         self.name = "PYSDK_TEST_SERIES"
@@ -52,8 +101,8 @@ class RetrieveExistingTimeSeriesAndDataPointsTestCase(unittest.TestCase):
     def test_data_with_limit(self):
         end = datetime.datetime(2019, 11, 20, hour=12, minute=0, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
         start = end - datetime.timedelta(hours=1)
-        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", limit=10, start=start.isoformat(),
-                                           end=end.isoformat())
+        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", limit=10, start_time=start.isoformat(),
+                                           end_time=end.isoformat())
         self.assertIsInstance(dps, DataPoints)
         self.assertEqual(len(dps), 10)
         self.assertIsInstance(dps.resources[0], DataPoint)
@@ -68,8 +117,8 @@ class RetrieveExistingTimeSeriesAndDataPointsTestCase(unittest.TestCase):
     def test_data_with_twin(self):
         end = datetime.datetime(2019, 11, 20, hour=12, minute=0, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
         start = end - datetime.timedelta(hours=1)
-        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", start=start.isoformat(),
-                                           end=end.isoformat())
+        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", start_time=start.isoformat(),
+                                           end_time=end.isoformat())
         self.assertIsInstance(dps, DataPoints)
         self.assertIsInstance(dps.resources[0], DataPoint)
         self.assertIsInstance(dps.resources[-1], DataPoint)
@@ -79,8 +128,8 @@ class RetrieveExistingTimeSeriesAndDataPointsTestCase(unittest.TestCase):
     def test_data_with_twin_including_outside_points(self):
         end = datetime.datetime(2019, 11, 20, hour=12, minute=0, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
         start = end - datetime.timedelta(hours=1)
-        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", start=start.isoformat(),
-                                           end=end.isoformat(), include_outside_points=True)
+        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", start_time=start.isoformat(),
+                                           end_time=end.isoformat(), include_outside_points=True)
         self.assertIsInstance(dps, DataPoints)
         self.assertIsInstance(dps.resources[0], DataPoint)
         self.assertIsInstance(dps.resources[-1], DataPoint)
