@@ -181,6 +181,7 @@ class OmniaClient(object):
                         break
 
                     results.extend(items)
+
                     if items[0].get("datapoints") is not None:
                         # limit response size based on number of returned data points
                         # TODO: Not robust because the web API return datapoints as
