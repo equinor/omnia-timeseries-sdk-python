@@ -78,7 +78,7 @@ class NewTimeSeriesTestCase(unittest.TestCase):
         self.ts = self.client.time_series.create(self.name, description=self.description, unit=self.unit,
                                                  asset_id=self.asset_id, external_id=self.external_id, step=self.step)
 
-    def test_types_and_attributes(self):
+    def test_create(self):
         self.assertIsInstance(self.ts, TimeSeries)
         self.assertEqual(self.name, self.ts.name)
         self.assertEqual(self.description, self.ts.description)
@@ -93,8 +93,18 @@ class NewTimeSeriesTestCase(unittest.TestCase):
         self.assertEqual(self.ts.id, _.id)
         self.assertEqual(self.ts.name, _.name)
 
+    def test_update(self):
+        self.ts = self.client.time_series.update(self.ts.id, unit="donkey")
+        self.assertIsInstance(self.ts, TimeSeries)
+        self.assertEqual(self.name, self.ts.name)
+        self.assertEqual(self.description, self.ts.description)
+        self.assertEqual("donkey", self.ts.unit)
+        self.assertIsNone(self.ts.asset_id)
+        self.assertIsNone(self.ts.external_id)
+        self.assertFalse(self.ts.step)
+
     def tearDown(self) -> None:
-        r = self.ts.delete()
+        _ = self.ts.delete()
         try:
             _ = self.client.time_series.retrieve(self.ts.id)
         except OmniaTimeSeriesAPIError as e:

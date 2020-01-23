@@ -54,6 +54,40 @@ class TimeSeriesAPI(object):
         items = self._omnia_client.post(self._resource_path, self._api_version, "", body=body)
         return TimeSeries(**items[0], omnia_client=self._omnia_client)
 
+    def update(self, id: str, name: str = None, description: str = None, asset_id: str = None, unit: str = None,
+               external_id: str = None, step: bool = False):
+        """
+        Update a single timeseries object.
+
+        Parameters
+        ----------
+        id : str
+            Id of the timeseries to update
+        name : str, optional
+            Name of the timeseries.
+        description : str, optional
+            Description of the timeseries.
+        asset_id : str, optional
+            ID of the asset this timeseries belongs to.
+        unit : str, optional
+            The timeseries physical unit of measure.
+        external_id : str, optional
+            ID from another (external) system provided by client.
+        step : bool, optional
+            Is this a step time series.
+
+        Returns
+        -------
+        TimeSeries
+            Time series instance.
+
+        """
+        # only name is mandatory
+        body = dict(name=name, description=description, step=step, unit=unit, asset_id=asset_id,
+                    external_id=external_id)
+        items = self._omnia_client.patch(self._resource_path, self._api_version, id, body=body)
+        return TimeSeries(**items[0], omnia_client=self._omnia_client)
+
     def delete(self, id: str):
         """
         Delete time series with given id.
@@ -137,9 +171,6 @@ class TimeSeriesAPI(object):
         # TODO: Update when Timeseries API support retrieving multiple timeseries by id
         timeseries = [self.retrieve(id) for id in ids]
         return TimeSeriesList(timeseries, omnia_client=self._omnia_client)
-
-    def update(self):
-        raise NotImplementedError
 
     def search(self):
         raise NotImplementedError
