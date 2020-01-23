@@ -515,6 +515,35 @@ class TimeSeries(OmniaResource):
         dps = self.data(start_time=start_time, end_time=end_time, limit=limit, include_outside_points=include_outside_points)
         dps.plot(**kwargs)
 
+    def update(self, name: str = None, description: str = None, asset_id: str = None, unit: str = None,
+               external_id: str = None, step: bool = False):
+        """
+        Update the timeseries meta data.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the timeseries.
+        description : str, optional
+            Description of the timeseries.
+        asset_id : str, optional
+            ID of the asset this timeseries belongs to.
+        unit : str, optional
+            The timeseries physical unit of measure.
+        external_id : str, optional
+            ID from another (external) system provided by client.
+        step : bool, optional
+            Is this a step time series.
+        """
+        _ = self._omnia_client.time_series.update(self.id, name=name, description=description, asset_id=asset_id,
+                                                  unit=unit, external_id=external_id, step=step)
+        self.name = _.name
+        self.external_id = _.external_id
+        self.asset_id = _.asset_id
+        self.description = _.description
+        self.step = _.step
+        self.unit = _.unit
+        self.changed_time = _.changed_time
 
 class TimeSeriesList(OmniaResourceList):
     """

@@ -94,7 +94,7 @@ class NewTimeSeriesTestCase(unittest.TestCase):
         self.assertEqual(self.ts.name, _.name)
 
     def test_update(self):
-        self.ts = self.client.time_series.update(self.ts.id, unit="donkey")
+        self.ts.update(unit="donkey")
         self.assertIsInstance(self.ts, TimeSeries)
         self.assertEqual(self.name, self.ts.name)
         self.assertEqual(self.description, self.ts.description)
