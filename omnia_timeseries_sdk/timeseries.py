@@ -144,7 +144,7 @@ class TimeSeriesAPI(object):
     def search(self):
         raise NotImplementedError
 
-    def add_data(self, id: str, time: list, values: list, status: list, asynch: bool = False):
+    def add_data(self, id: str, time: List, values: List, status: List, asynch: bool = False):
         """
         Add or update a timeseries' datapoints.
 
@@ -217,9 +217,9 @@ class TimeSeriesAPI(object):
 
         """
         if end_time is None:
-            end_time = datetime.datetime.utcnow().isoformat()
+            end_time = to_omnia_datetime_string(datetime.datetime.utcnow())
         if start_time is None:
-            start_time = (datetime.datetime.utcnow() - datetime.timedelta(days=1)).isoformat()
+            start_time = to_omnia_datetime_string(datetime.datetime.utcnow() - datetime.timedelta(days=1))
 
         parameters = dict(start_time=start_time, end_time=end_time, limit=limit, include_outside_points=include_outside_points)
         items = self._omnia_client.get(self._resource_path, self._api_version, f"{id}/data", parameters=parameters)
