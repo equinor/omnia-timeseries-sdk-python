@@ -545,6 +545,7 @@ class TimeSeries(OmniaResource):
         self.unit = _.unit
         self.changed_time = _.changed_time
 
+
 class TimeSeriesList(OmniaResourceList):
     """
     List of TimeSeries
