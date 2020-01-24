@@ -2,7 +2,7 @@
 Timeseries API
 """
 import datetime
-from typing import List, Union
+from typing import List
 from .resources import DataPoint, DataPoints, TimeSeries, TimeSeriesList
 from ._utils import to_omnia_datetime_string
 
@@ -16,7 +16,7 @@ class TimeSeriesAPI(object):
     omnia_client : OmniaClient
         Omnia client
     """
-    _resource_path = "plant/timeseries"
+    _resource_path = "timeseries"
     _api_version = "v1.5"
 
     def __init__(self, omnia_client):

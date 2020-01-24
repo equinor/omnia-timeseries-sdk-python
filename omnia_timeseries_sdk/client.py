@@ -11,11 +11,9 @@ import http.client
 import urllib.parse
 import urllib.error
 from .timeseries import TimeSeriesAPI
-from ._config import BASE_URL, IDP_BASE_URL, DEFAULT_TENANT
+from ._config import Config
 from ._utils import to_snake_case, to_camel_case
 from .exceptions import OmniaAuthenticationError, OmniaClientConnectionError, OmniaTimeSeriesAPIError
-
-TENANT = os.getenv("EquinorAzureADTenantId", DEFAULT_TENANT)
 
 
 class OmniaClient(object):
@@ -24,10 +22,8 @@ class OmniaClient(object):
 
     Parameters
     ----------
-    base_url : str, optional
-        Base url to send requests to, defaults to "https://api.gateway.equinor.com"
-    log_level : {debug, info, error}
-        Set logging severity level.
+    config : Config, optional
+        Client configuration (base url, IDP tenant, date-time format, logging level etc.)
 
     Notes
     -----
@@ -39,24 +35,33 @@ class OmniaClient(object):
         omniaClientSecret - Shared secret key
 
     """
-    def __init__(self, base_url: str = None, log_level: str = None):
-        self.base_url = base_url or BASE_URL
+    def __init__(self, config=Config):
+        self.config = config
         self.time_series = TimeSeriesAPI(omnia_client=self)
 
         log_levels = dict(debug=logging.DEBUG, info=logging.INFO, error=logging.ERROR)
         logging.basicConfig(stream=sys.stdout,
-                            level=log_levels.get(log_level, logging.INFO),
+                            level=log_levels.get(self.config.log_level, logging.INFO),
                             format="%(levelname)s at line %(lineno)d in %(filename)s - %(message)s")
 
-    @staticmethod
-    def _token_request():
+    @property
+    def base_url(self):
+        """str: API base URL."""
+        return self.config.base_url
+
+    @property
+    def idp_url(self):
+        """str: Identity provider URL."""
+        return f'https://{self.config.idp_base_url}/{self.config.idp_tenant}'
+
+    def _token_request(self):
         """Requests access token."""
         # Set resource id and client id. Default ids for authentication by user impersonation (without shared secret).
         # service-to-service / machine-to-machine authentication using a shared secret requires generally different
         # resource and client ids and a shared secret (client secret). See also
         # https://github.com/equinor/OmniaPlant/wiki/Authentication-&-Authorization
-        resource_id = os.getenv("omniaResourceId", "141369bd-3dca-4b55-825b-56ad4a69b1fc")
-        client_id = os.getenv("omniaClientId", "67da184b-6bde-43fd-a155-30ed4ff162d2")
+        resource_id = os.getenv("omniaResourceId", self.config.default_resource_id)
+        client_id = os.getenv("omniaClientId", self.config.default_client_id)
         client_secret = os.getenv("omniaClientSecret")
 
         # check if current access token is still valid
@@ -68,7 +73,7 @@ class OmniaClient(object):
             logging.debug("Current access token is still valid.")
             return
 
-        context = adal.AuthenticationContext(f'https://{IDP_BASE_URL}/{TENANT}')
+        context = adal.AuthenticationContext(self.idp_url)
         try:
             if client_secret is not None:
                 logging.info("Authenticating with shared client secret (service-to-service).")
@@ -137,7 +142,7 @@ class OmniaClient(object):
         headers = dict(
             Authorization=f"Bearer {os.getenv('currentOmniaAccessToken', '')}",
             Connection="keep-alive",
-            Host=BASE_URL,
+            Host=self.config.base_url,
         )
 
         msg = f"{method.upper()} {url_with_parameters} {http.client.__doc__.split()[0]}"
