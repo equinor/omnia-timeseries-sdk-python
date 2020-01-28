@@ -127,7 +127,7 @@ class DataPoint(OmniaResource):
         self.id = id
         self.name = name
         self.unit = unit
-        self.time = from_datetime_string(time)
+        self.time = from_datetime_string(time) if time is not None else None
         self.value = value
         self.status = status
         self._omnia_client = omnia_client
@@ -386,8 +386,8 @@ class TimeSeries(OmniaResource):
         self.description = description
         self.step = step
         self.unit = unit
-        self.created_time = from_datetime_string(created_time)
-        self.changed_time = from_datetime_string(changed_time)
+        self.created_time = from_datetime_string(created_time) if created_time is not None else None
+        self.changed_time = from_datetime_string(changed_time) if changed_time is not None else None
         self._omnia_client = omnia_client
 
     def add_data(self, time: list, value: list, status: list, asynch: bool = False):
