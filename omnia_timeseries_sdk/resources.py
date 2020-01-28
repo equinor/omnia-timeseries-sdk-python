@@ -178,7 +178,7 @@ class DataPoints(OmniaResourceList):
     # TODO: Create aggregate properties (max, min, stdev, count etc), based on DataPoint
     def __init__(self, id: str = None, name: str = None, unit: str = None, time: List[str] = None,
                  value: List[Union[int, float]] = None, omnia_client=None):
-        self.resources = [DataPoint(time=t, value=v) for t, v in zip(time, value)]
+        self.resources = [DataPoint(time=t, value=v, id=id, name=name, unit=unit) for t, v in zip(time, value)]
         self.id = id
         self.name = name
         self.unit = unit
