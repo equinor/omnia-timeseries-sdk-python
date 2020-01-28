@@ -1,202 +1,163 @@
+import os
 import unittest
 import datetime
 from omnia_timeseries_sdk import OmniaClient
+from omnia_timeseries_sdk._config import TestConfig
 from omnia_timeseries_sdk.resources import TimeSeries, TimeSeriesList, DataPoint, DataPoints
 from omnia_timeseries_sdk.exceptions import OmniaTimeSeriesAPIError
 
 
-class DataPointsTestCase(unittest.TestCase):
+@unittest.skipIf(
+    os.getenv("omniaClientSecret") is None,
+    reason="Skipping test. The shared client secret 'omniaClientSecret' is not set in environment variable")
+class TimeseriesDatapointsIntegrationTestCase(unittest.TestCase):
     def setUp(self) -> None:
+        self.client = OmniaClient(config=TestConfig)
+
+        # avoid potential conflicts (remove remains from unsuccessful tests).
+        for ts in self.client.time_series.list(name="PYSDK_TEST_SERIES"):
+            try:
+                ts.delete_data()
+            except OmniaTimeSeriesAPIError:
+                pass
+
+            try:
+                ts.delete()
+            except OmniaTimeSeriesAPIError:
+                pass
+
         # create time series and datapoints
-        self.client = OmniaClient()
-        self.name = "PYSDK_TEST_SERIES"
-        self.description = "Time series instance created for testing API."
-        self.unit = "horse"
-        self.asset_id = None
-        self.external_id = None
-        self.step = False
-        self.ts = self.client.time_series.create(self.name, description=self.description, unit=self.unit,
-                                                 asset_id=self.asset_id, external_id=self.external_id, step=self.step)
-        self.t0 = datetime.datetime(2020, 1, 1, hour=12, minute=0, second=0)
+        self.ts1 = self.client.time_series.create(
+            "PYSDK_TEST_SERIES",
+            description="Time series instance created for testing API.",
+            unit="horse",
+            asset_id=None, external_id=None, step=False
+        )
+        self.ts2 = self.client.time_series.create(
+            "PYSDK_TEST_SERIES_TWO",
+            description="Time series instance created for testing API.",
+            unit="horse",
+            asset_id=None, external_id=None, step=False
+        )
+        self.t0 = datetime.datetime(2020, 1, 1, hour=12, minute=0, second=0, tzinfo=datetime.timezone.utc)
         self.dt = datetime.timedelta(days=1)
-        self.ts.add_data([self.t0, self.t0 + self.dt], [100, 200], [0, 0])
-
-    def test_fetch_in_twin(self):
-        # fetch all data points
-        dps = self.ts.data(start_time=(self.t0 - datetime.timedelta(days=1)).isoformat(),
-                           end_time=(self.t0 + datetime.timedelta(days=2)).isoformat())
-        self.assertIsInstance(dps, DataPoints)
-        self.assertEqual(2, len(dps))
-        self.assertEqual(self.ts.id, dps.id)
-        self.assertEqual([100, 200], dps.value)
-
-    def test_fetch_dps_after_time(self):
-        # fetch data points after some date-time
-        dps = self.ts.data(start_time=(self.t0 + datetime.timedelta(hours=12)).isoformat())
-        self.assertIsInstance(dps, DataPoints)
-        self.assertEqual(1, len(dps))
-        self.assertEqual(self.ts.id, dps.id)
-        self.assertEqual([200], dps.value)
-
-    def tearDown(self) -> None:
-        # delete data points
-        try:
-            _ = self.ts.delete_data()
-        except OmniaTimeSeriesAPIError as e:
-            # NB: Timeseries API v1.5 has a bug that raises an internal server error (code 500) even though the
-            #  datapoints are deleted.
-            # TODO: Reformulate once the timeseries API bug is corrected
-            pass
-
-        # check that the data points were actually deleted
-        dps = self.ts.data()
-        if not len(dps) == 0:
-            self.fail(f"The data points on time series '{self.ts.id}' still exist.")
-
-        # delete time series
-        _ = self.ts.delete()
-        try:
-            _ = self.client.time_series.retrieve(self.ts.id)
-        except OmniaTimeSeriesAPIError as e:
-            self.assertEqual(404, int(e.status))
-        else:
-            self.fail(f"Time series '{self.ts.id}' still exists.")
-
-
-class NewTimeSeriesTestCase(unittest.TestCase):
-    def setUp(self) -> None:
-        self.client = OmniaClient()
-        self.name = "PYSDK_TEST_SERIES"
-        self.description = "Time series instance created for testing API."
-        self.unit = "horse"
-        self.asset_id = None
-        self.external_id = None
-        self.step = False
-        self.ts = self.client.time_series.create(self.name, description=self.description, unit=self.unit,
-                                                 asset_id=self.asset_id, external_id=self.external_id, step=self.step)
+        self.ts1.add_data([self.t0, self.t0 + self.dt, self.t0 + 2 * self.dt], [100, 200, 150], [0, 0, 0])
 
     def test_create(self):
-        self.assertIsInstance(self.ts, TimeSeries)
-        self.assertEqual(self.name, self.ts.name)
-        self.assertEqual(self.description, self.ts.description)
-        self.assertEqual(self.unit, self.ts.unit)
-        self.assertIsNone(self.ts.asset_id)
-        self.assertIsNone(self.ts.external_id)
-        self.assertFalse(self.ts.step)
+        self.assertIsInstance(self.ts1, TimeSeries)
+        self.assertEqual("PYSDK_TEST_SERIES", self.ts1.name)
+        self.assertEqual("Time series instance created for testing API.", self.ts1.description)
+        self.assertEqual("horse", self.ts1.unit)
+        self.assertIsNone(self.ts1.asset_id)
+        self.assertIsNone(self.ts1.external_id)
+        self.assertFalse(self.ts1.step)
 
-        # is it retrievable
-        _ = self.client.time_series.retrieve(self.ts.id)
+    def test_retrieve(self):
+        _ = self.client.time_series.retrieve(self.ts1.id)
         self.assertIsInstance(_, TimeSeries)
-        self.assertEqual(self.ts.id, _.id)
-        self.assertEqual(self.ts.name, _.name)
+        self.assertEqual(self.ts1.id, _.id)
+        self.assertEqual(self.ts1.name, _.name)
 
-    def test_update(self):
-        self.ts.update(unit="donkey")
-        self.assertIsInstance(self.ts, TimeSeries)
-        self.assertEqual(self.name, self.ts.name)
-        self.assertEqual(self.description, self.ts.description)
-        self.assertEqual("donkey", self.ts.unit)
-        self.assertIsNone(self.ts.asset_id)
-        self.assertIsNone(self.ts.external_id)
-        self.assertFalse(self.ts.step)
-
-    def tearDown(self) -> None:
-        _ = self.ts.delete()
-        try:
-            _ = self.client.time_series.retrieve(self.ts.id)
-        except OmniaTimeSeriesAPIError as e:
-            self.assertEqual(404, int(e.status))
-        else:
-            self.fail(f"Time series '{self.ts.id}' is still retrievable.")
-
-
-class ExistingTimeSeriesAndDataPointsTestCase(unittest.TestCase):
-    def setUp(self) -> None:
-        self.client = OmniaClient()
-
-    def tearDown(self) -> None:
-        pass
-
-    def test_data_with_limit(self):
-        end = datetime.datetime(2019, 11, 20, hour=12, minute=0, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
-        start = end - datetime.timedelta(hours=1)
-        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", limit=10, start_time=start.isoformat(),
-                                           end_time=end.isoformat())
-        self.assertIsInstance(dps, DataPoints)
-        self.assertEqual(len(dps), 10)
-        self.assertIsInstance(dps.resources[0], DataPoint)
-
-    def test_data(self):
-        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c")
-        self.assertIsInstance(dps, DataPoints)
-        self.assertIsInstance(dps.resources[0], DataPoint)
-        self.assertIsInstance(dps.resources[-1], DataPoint)
-        self.assertLessEqual(dps.resources[-1].time - dps.resources[0].time, datetime.timedelta(days=1))
-
-    def test_data_with_twin(self):
-        end = datetime.datetime(2019, 11, 20, hour=12, minute=0, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
-        start = end - datetime.timedelta(hours=1)
-        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", start_time=start.isoformat(),
-                                           end_time=end.isoformat())
-        self.assertIsInstance(dps, DataPoints)
-        self.assertIsInstance(dps.resources[0], DataPoint)
-        self.assertIsInstance(dps.resources[-1], DataPoint)
-        self.assertLessEqual(start, dps.resources[0].time)
-        self.assertLessEqual(dps.resources[-1].time, end)
-
-    def test_data_with_twin_including_outside_points(self):
-        end = datetime.datetime(2019, 11, 20, hour=12, minute=0, second=0, microsecond=0, tzinfo=datetime.timezone.utc)
-        start = end - datetime.timedelta(hours=1)
-        dps = self.client.time_series.data("b51e1723-c25b-4847-825e-2da26409ff3c", start_time=start.isoformat(),
-                                           end_time=end.isoformat(), include_outside_points=True)
-        self.assertIsInstance(dps, DataPoints)
-        self.assertIsInstance(dps.resources[0], DataPoint)
-        self.assertIsInstance(dps.resources[-1], DataPoint)
-        self.assertLessEqual(dps.resources[0].time, start)
-        self.assertLessEqual(start, dps.resources[1].time)
-        self.assertLessEqual(dps.resources[-2].time, end)
-        self.assertLessEqual(end, dps.resources[-1].time)
+    def test_retrieve_multiple(self):
+        _ = self.client.time_series.retrieve_multiple([self.ts1.id, self.ts2.id])
+        self.assertIsInstance(_, TimeSeriesList)
+        self.assertEqual(2, len(_))
+        self.assertIsInstance(_.resources[0], TimeSeries)
+        self.assertIsInstance(_.resources[1], TimeSeries)
+        self.assertEqual(_.resources[0].id, self.ts1.id)
+        self.assertEqual(_.resources[1].id, self.ts2.id)
 
     def test_list(self):
-        l = self.client.time_series.list(limit=9)
-        self.assertIsInstance(l, TimeSeriesList)
+        _ = self.client.time_series.list()
+        self.assertIsInstance(_, TimeSeriesList)
 
-    def test_list_with_limit(self):
-        l = self.client.time_series.list(limit=9)
-        self.assertIsInstance(l, TimeSeriesList)
-        self.assertEqual(len(l), 9)
-        self.assertIsInstance(l.resources[0], TimeSeries)
-
-    def test_retrieve_single_timeseries(self):
-        ts = self.client.time_series.retrieve("b51e1723-c25b-4847-825e-2da26409ff3c")
-        self.assertIsInstance(ts, TimeSeries)
-        self.assertEqual(ts.id, "b51e1723-c25b-4847-825e-2da26409ff3c")
-
-    def test_retrieve_multiple_timeseries(self):
-        tsl = self.client.time_series.retrieve_multiple(["bdc2e4aa-83de-458b-b989-675fa4e58aac",
-                                                         "b51e1723-c25b-4847-825e-2da26409ff3c"])
-        self.assertIsInstance(tsl, TimeSeriesList)
-        self.assertEqual(len(tsl), 2)
-        self.assertIsInstance(tsl.resources[0], TimeSeries)
-        self.assertIsInstance(tsl.resources[1], TimeSeries)
-        self.assertEqual(tsl.resources[0].id, "bdc2e4aa-83de-458b-b989-675fa4e58aac")
-        self.assertEqual(tsl.resources[1].id, "b51e1723-c25b-4847-825e-2da26409ff3c")
+    def test_update(self):
+        self.ts1.update(unit="donkey")
+        self.assertIsInstance(self.ts1, TimeSeries)
+        self.assertEqual("PYSDK_TEST_SERIES", self.ts1.name)
+        self.assertEqual("Time series instance created for testing API.", self.ts1.description)
+        self.assertEqual("donkey", self.ts1.unit)
+        self.assertIsNone(self.ts1.asset_id)
+        self.assertIsNone(self.ts1.external_id)
+        self.assertFalse(self.ts1.step)
 
     def test_first_dp(self):
-        dp = self.client.time_series.first_data("b51e1723-c25b-4847-825e-2da26409ff3c")
+        dp = self.ts1.first()
         self.assertIsInstance(dp, DataPoint)
         self.assertIsInstance(dp.time, datetime.datetime)
-        self.assertIsInstance(dp.value, (float, int, str))
+        self.assertIsInstance(dp.value, (int, float))
         self.assertIsInstance(dp.status, int)
         self.assertIsInstance(dp.unit, str)
+        self.assertEqual(100, dp.value)
+        self.assertEqual(datetime.datetime(2020, 1, 1, hour=12, minute=0, second=0, tzinfo=datetime.timezone.utc), dp.time)
 
     def test_latest_dp(self):
-        dp = self.client.time_series.latest_data("b51e1723-c25b-4847-825e-2da26409ff3c")
+        dp = self.ts1.latest()
         self.assertIsInstance(dp, DataPoint)
         self.assertIsInstance(dp.time, datetime.datetime)
-        self.assertIsInstance(dp.value, (float, int, str))
+        self.assertIsInstance(dp.value, (int, float))
         self.assertIsInstance(dp.status, int)
         self.assertIsInstance(dp.unit, str)
+        self.assertEqual(150, dp.value)
+        self.assertEqual(datetime.datetime(2020, 1, 3, hour=12, minute=0, second=0, tzinfo=datetime.timezone.utc), dp.time)
+
+    def test_dps_in_twin(self):
+        start = self.t0 - datetime.timedelta(days=1)
+        end = self.t0 + datetime.timedelta(days=1.5)
+        dps = self.ts1.data(start_time=start.isoformat(),
+                            end_time=end.isoformat())
+        self.assertIsInstance(dps, DataPoints)
+        self.assertEqual(2, len(dps))
+        self.assertEqual(self.ts1.id, dps.id)
+        self.assertEqual([100, 200], dps.value)
+        self.assertIsInstance(dps.resources[0], DataPoint)
+        self.assertIsInstance(dps.resources[1], DataPoint)
+        for dp in dps:
+            self.assertGreaterEqual(dp.time, start)
+            self.assertLessEqual(dp.time, end)
+
+    def test_dps_after_time(self):
+        start = self.t0 + datetime.timedelta(hours=12)
+        dps = self.ts1.data(start_time=start.isoformat())
+        self.assertIsInstance(dps, DataPoints)
+        self.assertEqual(2, len(dps))
+        self.assertEqual(self.ts1.id, dps.id)
+        self.assertEqual([200, 150], dps.value)
+        for dp in dps:
+            self.assertGreaterEqual(dp.time, start)
+
+    def test_include_outside_dps(self):
+        start = self.t0 + datetime.timedelta(hours=12)
+        dps = self.ts1.data(start_time=start.isoformat(), include_outside_points=True)
+        self.assertIsInstance(dps, DataPoints)
+        self.assertEqual(3, len(dps))
+        self.assertEqual(self.ts1.id, dps.id)
+        self.assertEqual([100, 200, 150], dps.value)
+
+    def tearDown(self) -> None:
+        for ts in [self.ts1, self.ts2]:
+            # delete data points
+            try:
+                _ = ts.delete_data()
+            except OmniaTimeSeriesAPIError as e:
+                # NB: Timeseries API v1.5 has a bug that raises an internal server error (code 500) even though the
+                #  datapoints are deleted.
+                # TODO: Reformulate once the timeseries API bug is corrected
+                pass
+
+            # check that the data points were actually deleted
+            dps = ts.data()
+            if not len(dps) == 0:
+                self.fail(f"The data points on time series '{ts.id}' still exist.")
+
+            # delete time series
+            _ = ts.delete()
+            try:
+                _ = self.client.time_series.retrieve(ts.id)
+            except OmniaTimeSeriesAPIError as e:
+                self.assertEqual(404, int(e.status))
+            else:
+                self.fail(f"Time series '{ts.id}' still exists.")
 
 
 if __name__ == '__main__':

@@ -1,16 +1,16 @@
 import unittest
 import datetime
 from pandas import DataFrame
-from omnia_timeseries_sdk import OmniaClient
 from omnia_timeseries_sdk.resources import OmniaResource, OmniaResourceList, TimeSeries, TimeSeriesList, DataPoint, \
     DataPoints, DataPointsList
 
 
 class TimeSeriesListResourceTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.client = OmniaClient()
-        self.ts = self.client.time_series.retrieve_multiple(["bdc2e4aa-83de-458b-b989-675fa4e58aac",
-                                                             "b51e1723-c25b-4847-825e-2da26409ff3c"])
+        self.ts = TimeSeriesList([
+            TimeSeries(id="someid", name="ameasure", unit="m", external_id="idid"),
+            TimeSeries(id="anotherid", name="differentmeasure", unit="m", external_id="uiduid")
+        ])
 
     def tearDown(self) -> None:
         pass
@@ -20,11 +20,8 @@ class TimeSeriesListResourceTestCase(unittest.TestCase):
         self.assertIsInstance(self.ts.resources, list)
         self.assertIsInstance(self.ts.resources[0], TimeSeries)
 
-    def test_data(self):
-        dps = self.ts.data(limit=2)
-        self.assertIsInstance(dps, DataPointsList)
-        self.assertIsInstance(dps.resources, list)
-        self.assertIsInstance(dps.resources[0], DataPoints)
+    def test_len(self):
+        self.assertEqual(2, len(self.ts))
 
     def test_dump(self):
         d = self.ts.dump()
@@ -42,13 +39,12 @@ class TimeSeriesListResourceTestCase(unittest.TestCase):
 
 class TimeSeriesResourceTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.client = OmniaClient()
-        self.ts = self.client.time_series.retrieve("b51e1723-c25b-4847-825e-2da26409ff3c")
+        self.ts = TimeSeries(id="someid", name="ameasure", unit="m", external_id="uiduid", description="for testing")
 
     def tearDown(self) -> None:
         pass
 
-    def test_type(self):
+    def test_types(self):
         self.assertIsInstance(self.ts, TimeSeries)
 
     def test_attributes(self):
@@ -58,12 +54,6 @@ class TimeSeriesResourceTestCase(unittest.TestCase):
         self.assertIsInstance(self.ts.description, str)
         self.assertIsInstance(self.ts.step, bool)
         self.assertIsInstance(self.ts.unit, str)
-        self.assertIsInstance(self.ts.created_time, datetime.datetime)
-        self.assertIsInstance(self.ts.changed_time, datetime.datetime)
-
-    def test_data(self):
-        dps = self.ts.data(limit=2)
-        self.assertIsInstance(dps, DataPoints)
 
     def test_dump(self):
         d = self.ts.dump()
@@ -73,14 +63,6 @@ class TimeSeriesResourceTestCase(unittest.TestCase):
         d = self.ts.dump(camel_case=True)
         self.assertIn("externalId", d.keys())
 
-    def test_first(self):
-        dp = self.ts.first()
-        self.assertIsInstance(dp, DataPoint)
-
-    def test_latest(self):
-        dp = self.ts.latest()
-        self.assertIsInstance(dp, DataPoint)
-
     def test_topandas(self):
         df = self.ts.to_pandas()
         self.assertIsInstance(df, DataFrame)
@@ -88,16 +70,25 @@ class TimeSeriesResourceTestCase(unittest.TestCase):
 
 class DataPointsListResourceTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.client = OmniaClient()
-        self.ts = self.client.time_series.retrieve_multiple(["bdc2e4aa-83de-458b-b989-675fa4e58aac",
-                                                             "b51e1723-c25b-4847-825e-2da26409ff3c"])
-        self.dps = self.ts.data()
+        self.dps = DataPointsList([
+            DataPoints(
+                id="someid", name="ameasure", unit="m",
+                time=[datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
+                      (datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)).isoformat()],
+                value=[100., 200.]
+            ),
+            DataPoints(
+                id="anotherid", name="differentmeasure", unit="m",
+                time=[datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
+                      (datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)).isoformat()],
+                value=[100., 200.]
+            )
+        ])
 
     def tearDown(self) -> None:
         pass
 
     def test_types(self):
-        self.assertIsInstance(self.ts, TimeSeriesList)
         self.assertIsInstance(self.dps, DataPointsList)
         self.assertIsInstance(self.dps.resources, list)
         self.assertIsInstance(self.dps.resources[0], DataPoints)
@@ -113,15 +104,17 @@ class DataPointsListResourceTestCase(unittest.TestCase):
 
 class DataPointsResourceTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.client = OmniaClient()
-        self.ts = self.client.time_series.retrieve("bdc2e4aa-83de-458b-b989-675fa4e58aac")
-        self.dps = self.ts.data()
+        self.dps = DataPoints(
+            id="someid", name="ameasure", unit="m",
+            time=[datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
+                  (datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)).isoformat()],
+            value=[100., 200.]
+        )
 
     def tearDown(self) -> None:
         pass
 
     def test_types(self):
-        self.assertIsInstance(self.ts, TimeSeries)
         self.assertIsInstance(self.dps, DataPoints)
         self.assertIsInstance(self.dps.resources, list)
         self.assertIsInstance(self.dps.resources[0], DataPoint)
@@ -134,9 +127,8 @@ class DataPointsResourceTestCase(unittest.TestCase):
         self.assertIsInstance(self.dps.latest, DataPoint)
 
     def test_attributes(self):
-        self.assertEqual(self.dps.id, self.ts.id)
-        self.assertEqual(self.dps.name, self.ts.name)
-        self.assertEqual(self.dps.unit, self.ts.unit)
+        self.assertEqual(self.dps.id, self.dps.resources[0].id)
+        self.assertEqual(self.dps.name, self.dps.resources[0].name)
 
     def test_dump(self):
         d = self.dps.dump()
@@ -149,15 +141,13 @@ class DataPointsResourceTestCase(unittest.TestCase):
 
 class DataPointResourceTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.client = OmniaClient()
-        self.ts = self.client.time_series.retrieve("bdc2e4aa-83de-458b-b989-675fa4e58aac")
-        self.dp = self.ts.first()
+        self.dp = DataPoint(id="someid", name="ameasure", unit="m",
+                            time=datetime.datetime.now(tz=datetime.timezone.utc).isoformat(), value=100., status=0)
 
     def tearDown(self) -> None:
         pass
 
     def test_types(self):
-        self.assertIsInstance(self.ts, TimeSeries)
         self.assertIsInstance(self.dp, DataPoint)
         self.assertIsInstance(self.dp.id, str)
         self.assertIsInstance(self.dp.name, str)
@@ -166,16 +156,16 @@ class DataPointResourceTestCase(unittest.TestCase):
         self.assertIsInstance(self.dp.value, (float, int))
 
     def test_attributes(self):
-        self.assertEqual(self.dp.id, self.ts.id)
-        self.assertEqual(self.dp.name, self.ts.name)
-        self.assertEqual(self.dp.unit, self.ts.unit)
+        self.assertEqual("someid", self.dp.id)
+        self.assertEqual("ameasure", self.dp.name)
+        self.assertEqual("m", self.dp.unit)
 
     def test_dump(self):
-        d = self.ts.dump()
+        d = self.dp.dump()
         self.assertIsInstance(d, dict)
 
     def test_topandas(self):
-        df = self.ts.to_pandas()
+        df = self.dp.to_pandas()
         self.assertIsInstance(df, DataFrame)
 
 
