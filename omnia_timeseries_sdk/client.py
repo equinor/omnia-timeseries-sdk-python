@@ -22,7 +22,7 @@ class OmniaClient(object):
 
     Parameters
     ----------
-    config : Config, optional
+    config : object, optional
         Client configuration (base url, IDP tenant, date-time format, logging level etc.)
 
     Notes
@@ -43,11 +43,6 @@ class OmniaClient(object):
         logging.basicConfig(stream=sys.stdout,
                             level=log_levels.get(self.config.log_level, logging.INFO),
                             format="%(levelname)s at line %(lineno)d in %(filename)s - %(message)s")
-
-    @property
-    def base_url(self):
-        """str: API base URL."""
-        return self.config.base_url
 
     @property
     def idp_url(self):
@@ -129,7 +124,7 @@ class OmniaClient(object):
         # request new access token
         self._token_request()
 
-        url = "/" + "/".join([p for p in [resource, version, endpoint] if p.strip()])
+        url = "/" + "/".join([p for p in [self.config.base_url, resource, version, endpoint] if p.strip()])
         if parameters is not None and isinstance(parameters, dict):
             parameters = to_camel_case({k: v for k, v in parameters.items() if v is not None})
             enc_parameters = urllib.parse.urlencode(parameters)
@@ -142,7 +137,7 @@ class OmniaClient(object):
         headers = dict(
             Authorization=f"Bearer {os.getenv('currentOmniaAccessToken', '')}",
             Connection="keep-alive",
-            Host=self.config.base_url,
+            Host=self.config.host,
         )
 
         msg = f"{method.upper()} {url_with_parameters} {http.client.__doc__.split()[0]}"
@@ -157,7 +152,7 @@ class OmniaClient(object):
         logging.debug(msg)
 
         try:
-            connection = http.client.HTTPSConnection(self.base_url)
+            connection = http.client.HTTPSConnection(self.config.host)
         except Exception:
             logging.error("Request failed", exc_info=True)
             raise OmniaClientConnectionError()
