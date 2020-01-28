@@ -6,7 +6,7 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 import uuid
 import re
-from ._config import DATETIME_FORMAT
+from ._config import Config
 
 # compile regex for camel case to snake case
 first_cap_re = re.compile('(.)([A-Z][a-z]+)')
@@ -156,7 +156,7 @@ def to_omnia_datetime_string(d):
     """
     assert isinstance(d, datetime)
 
-    return d.strftime(DATETIME_FORMAT)
+    return d.strftime(Config.datetime_format)
 
 
 def from_datetime_string(s):
