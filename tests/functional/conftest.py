@@ -6,8 +6,6 @@ from omnia_timeseries_sdk import OmniaClient
 from omnia_timeseries_sdk._config import TestConfig
 from omnia_timeseries_sdk.exceptions import OmniaTimeSeriesAPIError
 from datetime import datetime, timedelta, timezone
-from omnia_timeseries_sdk.resources import OmniaResource, OmniaResourceList, TimeSeries, TimeSeriesList, DataPoint, \
-    DataPoints, DataPointsList
 
 
 @pytest.fixture(scope="module")
