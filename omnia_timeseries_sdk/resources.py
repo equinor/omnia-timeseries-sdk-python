@@ -377,7 +377,7 @@ class TimeSeries(OmniaResource):
 
     """
     def __init__(self, id: str = None, external_id: str = None, name: str = None, description: str = None,
-                 step: bool = None, unit: str = None, created_time: str = None, changed_time: str = None,
+                 step: bool = False, unit: str = None, created_time: str = None, changed_time: str = None,
                  asset_id: str = None, omnia_client = None):
         self.id = id
         self.external_id = external_id
