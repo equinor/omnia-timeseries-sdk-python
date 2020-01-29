@@ -120,5 +120,4 @@ def test_include_outside_dps(new_timeseries):
     assert dps.value == [100, 200, 150]
     for dp in dps:
         assert isinstance(dp, DataPoint)
-        assert dp.time >= start
 
