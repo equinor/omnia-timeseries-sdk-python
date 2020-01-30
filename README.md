@@ -23,13 +23,6 @@ pip install omnia_timeseries_sdk
 pip install --upgrade omnia_timeseries_sdk
 ```
 
-To access Omnia you have to set the following environmental variables. The values are provided by the Omnia administrators.
-```console
-set omniaResourceId="omnia-resource-id"
-set omniaClientId="your-client-id"
-set omniaClientSecret="very-very-secret-shared-key"
-```
-
 Import the Omnia client in your own scripts...
 
 ```python
@@ -39,6 +32,17 @@ from omnia_timeseries_sdk import OmniaClient
 ... and get to work. [Here](https://github.com/equinor/omnia-timeseries-sdk-python/blob/master/examples/introduction.ipynb) 
 is an introduction. 
 
+### Authentication
+
+The SDK supports [authentication by user impersonation and using a shared secret](https://github.com/equinor/OmniaPlant/wiki/Authentication-&-Authorization#authenticating-by-user-impersonation-without-any-shared-secret-for-people-with-equinor-accounts)
+
+When accessing Omnia from a service with a shared client secret you must set the following environmental variables. The 
+values are provided by the Omnia administrators.
+```console
+set omniaResourceId="omnia-resource-id"
+set omniaClientId="your-client-id"
+set omniaClientSecret="very-very-secret-shared-key"
+```
 Take a look at the resources listed below to learn more.
 
 ### Resources
@@ -98,10 +102,12 @@ help(omnia_timeseries_sdk)
 
 ### Running the tests
 
-We apply the [unittest](https://docs.python.org/3/library/unittest.html#module-unittest) framework.
+We apply the [unittest](https://docs.python.org/3/library/unittest.html#module-unittest) and 
+[pyteset](https://docs.pytest.org/en/latest/contents.html) frameworks.
 
+Run the tests and check test coverage by
 ```console
-python -m unittest discover
+pytest --cov=omnia_timeseries_sdk --cov-report term-missing tests/
 ```
 
 ### Building the package
@@ -127,7 +133,8 @@ sphinx-build -b html docs\source docs\_build
 
 ### Deployment
 
-The package releases are deployed to [PyPi](https://pypi.org/project/omnia-timeseries-sdk/).
+The package [releases](https://github.com/equinor/omnia-timeseries-sdk-python/releases) are deployed 
+to [PyPi](https://pypi.org/project/omnia-timeseries-sdk/).
 
 We use GitHub Actions to automate the build and deployment (CI-CD).
 
@@ -135,11 +142,9 @@ We use GitHub Actions to automate the build and deployment (CI-CD).
 
 We apply the "major.minor.micro" versioning scheme defined in [PEP 440](https://www.python.org/dev/peps/pep-0440/).
 
-<!---
-We cut a new version by applying a Git tag like `3.0.1` at the desired commit and then
-[setuptools_scm](https://github.com/pypa/setuptools_scm/#setup-py-usage) takes care of the rest. For the versions
-available, see the [tags on this repository](https://github.com/equinor/simpos/tags).
---->
+We cut a new version by applying a Git tag like `0.1.0` at the desired commit and then
+[setuptools_scm](https://github.com/pypa/setuptools_scm/#setup-py-usage) takes care of the rest at build time.
+See the [tags on this repository](https://github.com/equinor/omnia-timeseries-sdk-python/tags).
 
 ## Authors
 
