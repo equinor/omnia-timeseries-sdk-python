@@ -3,19 +3,19 @@ from datetime import datetime, timedelta, timezone
 from omnia_timeseries_sdk.resources import TimeSeries, TimeSeriesList, DataPoint, DataPoints
 
 
-@pytest.mark.integrationtest
-def test_list(client, new_timeseries):
-    tsl = client.time_series.list()
-    assert isinstance(tsl, TimeSeriesList)
-    assert len(tsl) == 1
-
-
-@pytest.mark.integrationtest
-def test_list_name(client, new_timeseries):
-    tsl = client.time_series.list(name="PYSDK_")
-    assert isinstance(tsl, TimeSeriesList)
-    assert len(tsl) == 1
-    assert isinstance(tsl.resources[0], TimeSeries)
+# @pytest.mark.integrationtest
+# def test_list(client, new_timeseries):
+#     tsl = client.time_series.list()
+#     assert isinstance(tsl, TimeSeriesList)
+#     assert len(tsl) == 1
+#
+#
+# @pytest.mark.integrationtest
+# def test_list_name(client, new_timeseries):
+#     tsl = client.time_series.list(name="PYSDK_")
+#     assert isinstance(tsl, TimeSeriesList)
+#     assert len(tsl) == 1
+#     assert isinstance(tsl.resources[0], TimeSeries)
 
 
 @pytest.mark.integrationtest
