@@ -27,6 +27,7 @@ def test_retrieve(client, new_timeseries):
     assert ts.unit == new_timeseries.unit
     assert ts.asset_id is None
     assert ts.external_id is None
+    assert ts.facility is None
     assert not ts.step
 
 
@@ -42,6 +43,7 @@ def test_retrieve_multiple(client, new_timeseries):
     assert ts.unit == new_timeseries.unit
     assert ts.asset_id is None
     assert ts.external_id is None
+    assert ts.facility is None
     assert not ts.step
 
 
