@@ -372,16 +372,19 @@ class TimeSeries(OmniaResource):
         ISO formatted date-time of when the time series was last changed
     asset_id : str, optional
         Id of the asset this times eries belong to
+    facility : str, optional
+        Facility this timeseries belongs to. Can be a SID code, SAP code or NPDID registered in the Common Library API.
     omnia_client : OmniaClient, optional
         OMNIA client.
 
     """
     def __init__(self, id: str = None, external_id: str = None, name: str = None, description: str = None,
                  step: bool = False, unit: str = None, created_time: str = None, changed_time: str = None,
-                 asset_id: str = None, omnia_client = None):
+                 asset_id: str = None, facility: str = None, omnia_client=None):
         self.id = id
         self.external_id = external_id
         self.asset_id = asset_id
+        self.facility = facility
         self.name = name
         self.description = description
         self.step = step
