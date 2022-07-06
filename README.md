@@ -1,3 +1,5 @@
+Outdated repo, use https://github.com/equinor/omnia-timeseries-python instead
+
 # OMNIA Timeseries SDK for Python
 
 Python software developer kit for the Omnia Timeseries API.
