@@ -1,4 +1,4 @@
-Outdated repo, use https://github.com/equinor/omnia-timeseries-python instead
+# This repo is outdated and archived, please use https://github.com/equinor/omnia-timeseries-python instead
 
 # OMNIA Timeseries SDK for Python
 
